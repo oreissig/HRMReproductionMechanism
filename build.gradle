@@ -1,6 +1,11 @@
 apply plugin: 'groovy'
 apply plugin: 'antlr'
 
+// configure code coverage
+apply plugin: 'jacoco'
+jacoco.toolVersion = '0.7.5.+'
+tasks.withType(Test) { it.finalizedBy 'jacocoTestReport' }
+
 repositories {
     mavenCentral()
 }
