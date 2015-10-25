@@ -1,4 +1,4 @@
-package com.github.oreissig.hrm.frontend
+package com.github.oreissig.hrm
 
 import com.github.oreissig.hrm.frontend.parser.HRMLexer
 import com.github.oreissig.hrm.frontend.parser.HRMParser

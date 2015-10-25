@@ -2,6 +2,7 @@ package com.github.oreissig.hrm.frontend
 
 import spock.lang.Unroll
 
+import com.github.oreissig.hrm.AbstractHRMSpec;
 import com.github.oreissig.hrm.frontend.parser.HRMParser.AddContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.CopyfromContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.CopytoContext

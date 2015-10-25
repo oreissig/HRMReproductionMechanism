@@ -1,4 +1,4 @@
-package com.github.oreissig.hrm.frontend
+package com.github.oreissig.hrm
 
 import org.antlr.v4.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CharStream
