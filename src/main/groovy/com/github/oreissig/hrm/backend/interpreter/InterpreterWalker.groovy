@@ -20,7 +20,15 @@ class InterpreterWalker {
         def statements = program.statement()
         int pc = 0
         while (pc < statements.size()) {
-            walker.walk(listener, statements[pc])
+            try {
+                walker.walk(listener, statements[pc])
+            } catch (Jump jump) {
+                pc = labels[jump.id.text]
+                if (pc == -1) {
+                    def symbol = jump.id.symbol
+                    throw new RuntimeException("invalid jump label $jump.id.text at $symbol.line:$symbol.startIndex")
+                }
+            }
             // TODO implement jumps
             pc++
         }

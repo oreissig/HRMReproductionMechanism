@@ -165,7 +165,6 @@ class InterpreterSpec extends AbstractHRMSpec
         'bump-' | 10    | 9
     }
     
-    @Ignore('TODO')
     def 'jump works'() {
         given:
         input = """\

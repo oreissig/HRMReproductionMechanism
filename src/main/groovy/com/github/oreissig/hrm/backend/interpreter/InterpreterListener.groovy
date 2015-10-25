@@ -25,6 +25,8 @@ class InterpreterListener extends HRMBaseListener {
     
     final Integer[] mem = new Integer[MAX_MEM]
     Integer current = null
+    // reuse "Jump" exception
+    Jump jump = new Jump()
     
     @Override
     void enterInbox(InboxContext ctx) {
@@ -73,17 +75,18 @@ class InterpreterListener extends HRMBaseListener {
     }
     
     @Override
-    void enterJump(JumpContext ctx) {
+    void enterJump(JumpContext ctx) throws Jump {
+        jump.id = ctx.ID()
+        throw jump
+    }
+    
+    @Override
+    void enterJumpneg(JumpnegContext ctx) throws Jump {
         throw new UnsupportedOperationException('TODO')
     }
     
     @Override
-    void enterJumpneg(JumpnegContext ctx) {
-        throw new UnsupportedOperationException('TODO')
-    }
-    
-    @Override
-    void enterJumpzero(JumpzeroContext ctx) {
+    void enterJumpzero(JumpzeroContext ctx) throws Jump {
         throw new UnsupportedOperationException('TODO')
     }
     
