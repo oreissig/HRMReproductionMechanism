@@ -19,3 +19,8 @@ An implementation of the [Human Resource Machine](http://tomorrowcorporation.com
 * `jump if zero #LABEL` continues execution at the given label only if the current datum is zero
 * `jump if negative #LABEL` continues execution at the given label only if the current datum is negative
 * `...` marks the beginning of a new comment line
+
+### Differences
+
+* As replacement for the graphical representation of jump targets you can declare labels and use those to designate a jump's destination.
+* Lots of memory slots are available, per default there are 9000.
