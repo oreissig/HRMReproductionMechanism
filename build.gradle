@@ -13,7 +13,14 @@ repositories {
 dependencies {
     antlr 'org.antlr:antlr4:4.5.+'
     compile localGroovy()
+    compile 'org.antlr:antlr4-runtime:4.5.+'
     compile 'org.slf4j:slf4j-api:1.7.12'
+    
     testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
     testRuntime 'org.slf4j:slf4j-simple:1.7.12'
+}
+
+configurations.all {
+    // use localGroovy()
+    exclude module: 'groovy-all'
 }
