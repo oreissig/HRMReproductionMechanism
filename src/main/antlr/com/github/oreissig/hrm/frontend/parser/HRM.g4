@@ -33,8 +33,8 @@ increment : 'bump+' NUMBER;
 decrement : 'bump-' NUMBER;
 label     : ':' ID;
 jump      : 'jump' ID;
-jumpzero  : 'jump if zero' ID;
-jumpneg   : 'jump if negative' ID;
+jumpzero  : 'jump' 'if' 'zero' ID;
+jumpneg   : 'jump' 'if' 'negative' ID;
 
 ID     : [a-z]+ ;
 NUMBER : [0-9]+ ;
