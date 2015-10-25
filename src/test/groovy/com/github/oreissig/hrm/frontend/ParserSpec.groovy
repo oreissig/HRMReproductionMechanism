@@ -12,5 +12,6 @@ class ParserSpec extends AbstractHRMSpec
 		
 		then:
 		noExceptionThrown()
+		tree.statement().empty
 	}
 }

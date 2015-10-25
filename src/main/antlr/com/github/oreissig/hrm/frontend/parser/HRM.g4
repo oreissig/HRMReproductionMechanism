@@ -5,7 +5,7 @@ grammar HRM;
 package com.github.oreissig.hrm.frontend.parser;
 }
 
-program : statement+;
+program : statement*;
 
 statement : expression '\r'? '\n';
 
