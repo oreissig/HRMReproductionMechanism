@@ -1,6 +1,5 @@
 package com.github.oreissig.hrm.frontend
 
-import spock.lang.Ignore
 import spock.lang.Unroll
 
 import com.github.oreissig.hrm.frontend.parser.HRMParser.AddContext
@@ -31,7 +30,6 @@ class ParserSpec extends AbstractHRMSpec
         tree.statement().empty
     }
     
-    @Ignore('TODO')
     def 'comments parse successfully'()
     {
         given:
@@ -75,5 +73,18 @@ class ParserSpec extends AbstractHRMSpec
         'jump'      | 'jump foo'             | JumpContext      | { assert it.ID().text == 'foo' }
         'jumpzero'  | 'jump if zero foo'     | JumpzeroContext  | { assert it.ID().text == 'foo' }
         'jumpneg'   | 'jump if negative foo' | JumpnegContext   | { assert it.ID().text == 'foo' }
+    }
+
+    def 'multiple statements are parsed successfully'()
+    {
+        given:
+        input = '''\
+        inbox
+        ... barbarbarbarbar
+        copyfrom 123
+        '''.stripIndent()
+        
+        expect:
+        parse().statement().size() == 2
     }
 }
