@@ -76,21 +76,30 @@ class InterpreterListener extends HRMBaseListener {
     
     @Override
     void enterJump(JumpContext ctx) throws Jump {
-        jump.id = ctx.ID()
-        throw jump
+        jump(ctx.ID())
     }
     
     @Override
     void enterJumpneg(JumpnegContext ctx) throws Jump {
-        throw new UnsupportedOperationException('TODO')
+        if (current < 0) {
+            jump(ctx.ID())
+        }
     }
     
     @Override
     void enterJumpzero(JumpzeroContext ctx) throws Jump {
-        throw new UnsupportedOperationException('TODO')
+        if (current == 0) {
+            jump(ctx.ID())
+        }
     }
     
     private int parse(TerminalNode node) {
         node.text.toInteger()
+    }
+    
+    private void jump(TerminalNode toLabel) throws Jump {
+        // this is nasty, but there's no obvious way of breaking out otherwise
+        jump.id = toLabel
+        throw jump
     }
 }

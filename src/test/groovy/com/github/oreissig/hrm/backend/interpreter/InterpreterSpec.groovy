@@ -1,6 +1,5 @@
 package com.github.oreissig.hrm.backend.interpreter
 
-import spock.lang.Ignore
 import spock.lang.Stepwise
 import spock.lang.Unroll
 
@@ -184,7 +183,6 @@ class InterpreterSpec extends AbstractHRMSpec
         0 * _
     }
     
-    @Ignore('TODO')
     def 'jump if zero works'() {
         given:
         input = """\
@@ -200,7 +198,7 @@ class InterpreterSpec extends AbstractHRMSpec
         walker.interpret(parse())
         
         then:
-        1 * i.read() >>> inbox
+        i.read() >>> inbox
         1 * o.print(result)
         0 * _
         
@@ -211,7 +209,6 @@ class InterpreterSpec extends AbstractHRMSpec
         [ 0, 1, 2] | 1
     }
     
-    @Ignore('TODO')
     def 'jump if negative works'(inbox, result) {
         given:
         input = """\
@@ -227,7 +224,7 @@ class InterpreterSpec extends AbstractHRMSpec
         walker.interpret(parse())
         
         then:
-        1 * i.read() >>> inbox
+        i.read() >>> inbox
         1 * o.print(result)
         0 * _
         
