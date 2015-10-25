@@ -8,7 +8,7 @@ class ParserSpec extends AbstractHRMSpec
 		input = ''
 		
 		when:
-		parser.program()
+		def tree = parse()
 		
 		then:
 		noExceptionThrown()
