@@ -21,9 +21,10 @@ import com.github.oreissig.hrm.frontend.parser.HRMParser.SubContext
 class InterpreterListener extends HRMBaseListener {
     static PrintStream output = System.out
     static InputStream input = System.'in'
+    static int MAX_MEM = 9001
     
-    final int[] mem = new int[9000]
-    int current = 0
+    final Integer[] mem = new Integer[MAX_MEM]
+    Integer current = null
     
     @Override
     void enterInbox(InboxContext ctx) {
