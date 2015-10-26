@@ -9,6 +9,9 @@ import com.github.oreissig.hrm.AbstractHRMSpec
 @Unroll
 class InterpreterSpec extends AbstractHRMSpec
 {
+    static final didJump = 1
+    static final didNotJump = 2
+    
     def walker = new InterpreterWalker()
     def i = Mock(InputStream)
     def o = Mock(PrintStream)
@@ -78,7 +81,7 @@ class InterpreterSpec extends AbstractHRMSpec
         value << [10, InterpreterListener.MAX_MEM-1, 0]
     }
     
-    def 'add works (#a+#b=#sum)'(a, b, sum) {
+    def 'add works (#a + #b = #sum)'(a, b, sum) {
         given:
         input = '''\
                 inbox
@@ -109,7 +112,7 @@ class InterpreterSpec extends AbstractHRMSpec
         0   | 0   | 0
     }
     
-    def 'sub works (#a-#b=#diff)'(a, b, diff) {
+    def 'sub works (#a - #b = #diff)'(a, b, diff) {
         given:
         input = '''\
                 inbox
@@ -140,7 +143,7 @@ class InterpreterSpec extends AbstractHRMSpec
         0   | 0   | 0
     }
     
-    def '#bump works (#bump(#value)=#result)'(bump, value, result) {
+    def '#bump works (#bump(#value) = #result)'(bump, value, result) {
         given:
         input = """\
                 inbox
@@ -183,7 +186,7 @@ class InterpreterSpec extends AbstractHRMSpec
         0 * _
     }
     
-    def 'jump if zero works'() {
+    def 'jump if zero works (#value)'(value, result) {
         given:
         input = """\
                 inbox
@@ -198,18 +201,18 @@ class InterpreterSpec extends AbstractHRMSpec
         walker.interpret(parse())
         
         then:
-        i.read() >>> inbox
+        i.read() >>> [value, didJump, didNotJump]
         1 * o.print(result)
         0 * _
         
         where:
-        inbox      | result
-        [-3, 1, 2] | 2
-        [ 3, 1, 2] | 2
-        [ 0, 1, 2] | 1
+        value | result
+        -3    | 2
+         3    | 2
+         0    | 1
     }
     
-    def 'jump if negative works'(inbox, result) {
+    def 'jump if negative works (#value)'(value, result) {
         given:
         input = """\
                 inbox
@@ -224,14 +227,14 @@ class InterpreterSpec extends AbstractHRMSpec
         walker.interpret(parse())
         
         then:
-        i.read() >>> inbox
+        i.read() >>> [value, didJump, didNotJump]
         1 * o.print(result)
         0 * _
         
         where:
-        inbox      | result
-        [-3, 1, 2] | 1
-        [ 3, 1, 2] | 2
-        [ 0, 1, 2] | 2
+        value | result
+        -3    | didJump
+         3    | didNotJump
+         0    | didNotJump
     }
 }
