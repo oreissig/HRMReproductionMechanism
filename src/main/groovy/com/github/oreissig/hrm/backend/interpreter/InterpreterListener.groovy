@@ -22,37 +22,37 @@ import com.github.oreissig.hrm.frontend.parser.HRMParser.SubContext
 class InterpreterListener extends HRMBaseListener {
     static PrintStream output = System.out
     static InputStream input = System.'in'
-    static int MAX_MEM = 9001
+    static int MAX_TILE = 9001
     
-    final Integer[] mem = new Integer[MAX_MEM]
-    Integer current = null
+    final Integer[] floor = new Integer[MAX_TILE]
+    Integer hands = null
     // reuse "Jump" exception
     private final Jump jump = new Jump()
     
     @Override
     void enterInbox(InboxContext ctx) {
-        current = input.read()
+        hands = input.read()
     }
     
     @Override
     void enterOutbox(OutboxContext ctx) {
         checkEmptyHands(ctx)
-        output.print current
-        current = null
+        output.print hands
+        hands = null
     }
     
     @Override
     void enterCopyfrom(CopyfromContext ctx) {
         def pointer = parse(ctx.NUMBER())
         checkEmptyTile(ctx, pointer)
-        current = mem[pointer]
+        hands = floor[pointer]
     }
     
     @Override
     void enterCopyto(CopytoContext ctx) {
         checkEmptyHands(ctx)
         def pointer = parse(ctx.NUMBER())
-        mem[pointer] = current
+        floor[pointer] = hands
     }
     
     @Override
@@ -60,7 +60,7 @@ class InterpreterListener extends HRMBaseListener {
         checkEmptyHands(ctx)
         def pointer = parse(ctx.NUMBER())
         checkEmptyTile(ctx, pointer)
-        current += mem[pointer]
+        hands += floor[pointer]
     }
     
     @Override
@@ -68,21 +68,27 @@ class InterpreterListener extends HRMBaseListener {
         checkEmptyHands(ctx)
         def pointer = parse(ctx.NUMBER())
         checkEmptyTile(ctx, pointer)
-        current -= mem[pointer]
+        hands -= floor[pointer]
     }
     
     @Override
     void enterIncrement(IncrementContext ctx) {
         def pointer = parse(ctx.NUMBER())
         checkEmptyTile(ctx, pointer)
-        mem[pointer]++
+        def value = floor[pointer]
+        value++
+        floor[pointer] = value
+        hands = value
     }
     
     @Override
     void enterDecrement(DecrementContext ctx) {
         def pointer = parse(ctx.NUMBER())
         checkEmptyTile(ctx, pointer)
-        mem[pointer]--
+        def value = floor[pointer]
+        value--
+        floor[pointer] = value
+        hands = value
     }
     
     @Override
@@ -93,7 +99,7 @@ class InterpreterListener extends HRMBaseListener {
     @Override
     void enterJumpneg(JumpnegContext ctx) throws Jump {
         checkEmptyHands(ctx)
-        if (current < 0) {
+        if (hands < 0) {
             jump(ctx.ID())
         }
     }
@@ -101,7 +107,7 @@ class InterpreterListener extends HRMBaseListener {
     @Override
     void enterJumpzero(JumpzeroContext ctx) throws Jump {
         checkEmptyHands(ctx)
-        if (current == 0) {
+        if (hands == 0) {
             jump(ctx.ID())
         }
     }
@@ -117,12 +123,12 @@ class InterpreterListener extends HRMBaseListener {
     }
     
     private void checkEmptyHands(ParserRuleContext ctx) throws EmptyHandsException {
-        if (current == null)
+        if (hands == null)
             throw new EmptyHandsException(ctx)
     }
     
     private void checkEmptyTile(ParserRuleContext ctx, int pointer) throws EmptyTileException {
-        if (mem[pointer] == null)
+        if (floor[pointer] == null)
             throw new EmptyTileException(ctx)
     }
 }

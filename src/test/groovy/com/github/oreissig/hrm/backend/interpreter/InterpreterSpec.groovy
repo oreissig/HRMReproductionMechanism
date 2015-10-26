@@ -96,7 +96,7 @@ class InterpreterSpec extends AbstractHRMSpec
         0 * _
         
         where:
-        value << [10, InterpreterListener.MAX_MEM-1, 0]
+        value << [10, InterpreterListener.MAX_TILE-1, 0]
     }
     
     def 'add works (#a + #b = #sum)'(a, b, sum) {
@@ -167,7 +167,6 @@ class InterpreterSpec extends AbstractHRMSpec
                 inbox
                 copyto 1
                 $bump 1
-                copyfrom 1
                 outbox
                 """.stripIndent()
         
