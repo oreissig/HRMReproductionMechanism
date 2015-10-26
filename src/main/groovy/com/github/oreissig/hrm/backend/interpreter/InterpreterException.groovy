@@ -14,12 +14,6 @@ class InterpreterException extends RuntimeException {
         fillInCustomStackTrace()
     }
 
-    InterpreterException(String msg, ParserRuleContext location, Throwable cause) {
-        super(msg, cause)
-        this.location = location
-        fillInCustomStackTrace()
-    }
-
     @Override
     Throwable fillInStackTrace() {
         // do not fill in Java stack trace
