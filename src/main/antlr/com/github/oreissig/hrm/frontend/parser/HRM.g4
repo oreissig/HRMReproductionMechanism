@@ -7,7 +7,7 @@ package com.github.oreissig.hrm.frontend.parser;
 
 program : statement*;
 
-statement : expression '\r'? '\n';
+statement : expression '\r'? '\n'?;
 
 expression : inbox
            | outbox
