@@ -51,6 +51,24 @@ class InterpreterSpec extends AbstractHRMSpec
         value << [23, -42, 0, Integer.MAX_VALUE, Integer.MIN_VALUE]
     }
     
+    def 'outbox clears the hand value'() {
+        given:
+        input = '''\
+                inbox
+                outbox
+                outbox
+                '''.stripIndent()
+        
+        when:
+        walker.interpret(parse())
+        
+        then:
+        thrown(EmptyHandsException)
+        1 * i.read() >> 23
+        1 * o.print(23)
+        0 * _
+    }
+    
     def 'copy from/to work (#value)'(value) {
         given:
         // swap two inputs

@@ -38,6 +38,7 @@ class InterpreterListener extends HRMBaseListener {
     void enterOutbox(OutboxContext ctx) {
         checkEmptyHands(ctx)
         output.print current
+        current = null
     }
     
     @Override
