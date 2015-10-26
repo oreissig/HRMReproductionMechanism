@@ -2,7 +2,10 @@ apply plugin: 'groovy'
 apply plugin: 'antlr'
 apply plugin: 'application'
 
+// configure application
 mainClassName = 'com.github.oreissig.hrm.Main'
+if (project.hasProperty('args'))
+    run.args = args.split(' ') as List
 
 // configure code coverage
 apply plugin: 'jacoco'

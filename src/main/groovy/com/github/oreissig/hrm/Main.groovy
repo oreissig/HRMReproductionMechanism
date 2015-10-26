@@ -10,17 +10,21 @@ import com.github.oreissig.hrm.frontend.parser.HRMLexer
 import com.github.oreissig.hrm.frontend.parser.HRMParser
 
 
-def cli = new CliBuilder(usage:'java -jar hrm.jar [-options] sourceFile')
+def cli = new CliBuilder(usage:'HRMReproductionMechanism [-options] sourceFile')
 
 cli.with {
-    i 'runs the interpreter'
+    // TODO activate once there's a second backend
+    //i 'runs the interpreter (default)'
     //l 'generates LLVM IR assembly'
 }
 
 def options = cli.parse(args)
 def file = options.arguments()[0]
 
-if (options.i) {
+if (!file) {
+    cli.usage()
+    System.exit(1)
+} else {
     interpret(file)
 }
 

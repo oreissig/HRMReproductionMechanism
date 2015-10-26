@@ -4,6 +4,10 @@
 
 An implementation of the [Human Resource Machine](http://tomorrowcorporation.com/humanresourcemachine) programming language by [Tomorrow Corporation](http://tomorrowcorporation.com).
 
+### Usage
+
+To interpret a HRM program just run `gradlew run -Pargs=YourSource.hrm`.
+
 ### Language Guide
 
 * `inbox` reads the next hand value from stdin
