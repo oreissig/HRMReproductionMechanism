@@ -23,4 +23,5 @@ An implementation of the [Human Resource Machine](http://tomorrowcorporation.com
 ### Differences
 
 * As replacement for the graphical representation of jump targets you can declare labels and use those to designate a jump's destination.
+* `inbox` and `outbox` operate on ASCII values.
 * Lots of tiles are available on the floor, per default there are 9000.
