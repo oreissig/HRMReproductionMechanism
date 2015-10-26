@@ -5,7 +5,7 @@ import groovy.transform.CompileStatic
 import org.antlr.v4.runtime.ParserRuleContext
 
 @CompileStatic
-class InterpreterException extends RuntimeException {
+abstract class InterpreterException extends RuntimeException {
     final ParserRuleContext location
 
     InterpreterException(String msg, ParserRuleContext location) {

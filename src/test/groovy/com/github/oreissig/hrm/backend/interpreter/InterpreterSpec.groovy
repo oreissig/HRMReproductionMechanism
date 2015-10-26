@@ -204,6 +204,17 @@ class InterpreterSpec extends AbstractHRMSpec
         0 * _
     }
     
+    def 'jump throws exception for unknown label'() {
+        given:
+        input = 'jump foo'
+        
+        when:
+        walker.interpret(parse())
+        
+        then:
+        thrown(UnknownJumpLabelException)
+    }
+    
     def 'jump if zero works (#value)'(value, result) {
         given:
         input = """\

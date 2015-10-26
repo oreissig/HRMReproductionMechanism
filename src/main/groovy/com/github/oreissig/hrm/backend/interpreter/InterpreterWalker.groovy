@@ -20,23 +20,24 @@ class InterpreterWalker {
         def statements = program.statement()
         int pc = 0
         while (pc < statements.size()) {
+            def statement = statements[pc]
             try {
-                walker.walk(listener, statements[pc])
+                walker.walk(listener, statement)
             } catch (Jump jump) {
-                pc = labels[jump.id.text]
+                def label = jump.id.text
+                pc = labels[label]
                 if (pc == -1) {
                     def symbol = jump.id.symbol
-                    throw new RuntimeException("invalid jump label $jump.id.text at $symbol.line:$symbol.startIndex")
+                    throw new UnknownJumpLabelException(statement, label)
                 }
             }
-            // TODO implement jumps
             pc++
         }
     }
     
     private Map<String,Integer> findLabels(ProgramContext program)
     {
-        Map<String,Integer> labels = [:]
+        Map<String,Integer> labels = [:].withDefault { -1 }
         ParseTreeListener labelFinder = new LabelListener(labels)
         walker.walk(labelFinder, program)
         return labels.asImmutable()
