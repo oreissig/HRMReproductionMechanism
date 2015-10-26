@@ -2,6 +2,7 @@ package com.github.oreissig.hrm.backend.interpreter
 
 import groovy.transform.CompileStatic
 
+import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.TerminalNode
 
 import com.github.oreissig.hrm.frontend.parser.HRMBaseListener
@@ -26,7 +27,7 @@ class InterpreterListener extends HRMBaseListener {
     final Integer[] mem = new Integer[MAX_MEM]
     Integer current = null
     // reuse "Jump" exception
-    Jump jump = new Jump()
+    private final Jump jump = new Jump()
     
     @Override
     void enterInbox(InboxContext ctx) {
@@ -35,42 +36,51 @@ class InterpreterListener extends HRMBaseListener {
     
     @Override
     void enterOutbox(OutboxContext ctx) {
+        checkEmptyHands(ctx)
         output.print current
     }
     
     @Override
     void enterCopyfrom(CopyfromContext ctx) {
         def pointer = parse(ctx.NUMBER())
+        checkEmptyTile(ctx, pointer)
         current = mem[pointer]
     }
     
     @Override
     void enterCopyto(CopytoContext ctx) {
+        checkEmptyHands(ctx)
         def pointer = parse(ctx.NUMBER())
         mem[pointer] = current
     }
     
     @Override
     void enterAdd(AddContext ctx) {
+        checkEmptyHands(ctx)
         def pointer = parse(ctx.NUMBER())
+        checkEmptyTile(ctx, pointer)
         current += mem[pointer]
     }
     
     @Override
     void enterSub(SubContext ctx) {
+        checkEmptyHands(ctx)
         def pointer = parse(ctx.NUMBER())
+        checkEmptyTile(ctx, pointer)
         current -= mem[pointer]
     }
     
     @Override
     void enterIncrement(IncrementContext ctx) {
         def pointer = parse(ctx.NUMBER())
+        checkEmptyTile(ctx, pointer)
         mem[pointer]++
     }
     
     @Override
     void enterDecrement(DecrementContext ctx) {
         def pointer = parse(ctx.NUMBER())
+        checkEmptyTile(ctx, pointer)
         mem[pointer]--
     }
     
@@ -81,6 +91,7 @@ class InterpreterListener extends HRMBaseListener {
     
     @Override
     void enterJumpneg(JumpnegContext ctx) throws Jump {
+        checkEmptyHands(ctx)
         if (current < 0) {
             jump(ctx.ID())
         }
@@ -88,6 +99,7 @@ class InterpreterListener extends HRMBaseListener {
     
     @Override
     void enterJumpzero(JumpzeroContext ctx) throws Jump {
+        checkEmptyHands(ctx)
         if (current == 0) {
             jump(ctx.ID())
         }
@@ -101,5 +113,15 @@ class InterpreterListener extends HRMBaseListener {
         // this is nasty, but there's no obvious way of breaking out otherwise
         jump.id = toLabel
         throw jump
+    }
+    
+    private void checkEmptyHands(ParserRuleContext ctx) throws EmptyHandsException {
+        if (current == null)
+            throw new EmptyHandsException(ctx)
+    }
+    
+    private void checkEmptyTile(ParserRuleContext ctx, int pointer) throws EmptyTileException {
+        if (mem[pointer] == null)
+            throw new EmptyTileException(ctx)
     }
 }

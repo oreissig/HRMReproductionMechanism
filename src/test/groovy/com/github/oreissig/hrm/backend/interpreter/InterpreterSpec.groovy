@@ -237,4 +237,55 @@ class InterpreterSpec extends AbstractHRMSpec
          3    | didNotJump
          0    | didNotJump
     }
+    
+    def 'empty hands throw exception for "#name"'(name, src) {
+        given:
+        input = src
+        
+        when:
+        walker.interpret(parse())
+        
+        then:
+        EmptyHandsException ex = thrown()
+        ex.message.contains name
+        name.startsWith ex.location.start.text
+        ex.stackTrace.size() == 1
+        ex.stackTrace[0].lineNumber == 1
+        
+        where:
+        name               | src
+        'outbox'           | 'outbox'
+        'copyto'           | 'copyto 1'
+        'add'              | 'add 1'
+        'sub'              | 'sub 1'
+        'jump if zero'     | 'jump if zero foo'
+        'jump if negative' | 'jump if negative foo'
+    }
+    
+    def 'empty tile throws exception for "#name"'(name, src) {
+        given:
+        i.read() >> 0
+        input = """\
+                inbox
+                $src
+                """.stripIndent()
+        
+        when:
+        walker.interpret(parse())
+        
+        then:
+        EmptyTileException ex = thrown()
+        ex.message.contains name
+        name.startsWith ex.location.start.text
+        ex.stackTrace.size() == 1
+        ex.stackTrace[0].lineNumber == 2
+        
+        where:
+        name               | src
+        'copyfrom'         | 'copyfrom 1'
+        'add'              | 'add 1'
+        'sub'              | 'sub 1'
+        'bump+'            | 'bump+ 1'
+        'bump-'            | 'bump- 1'
+    }
 }
