@@ -24,10 +24,9 @@ class InterpreterWalker {
             try {
                 walker.walk(listener, statement)
             } catch (Jump jump) {
-                def label = jump.id.text
+                def label = jump.label
                 pc = labels[label]
                 if (pc == -1) {
-                    def symbol = jump.id.symbol
                     throw new UnknownJumpLabelException(statement, label)
                 }
             }

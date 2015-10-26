@@ -118,7 +118,7 @@ class InterpreterListener extends HRMBaseListener {
     
     private void jump(TerminalNode toLabel) throws Jump {
         // this is nasty, but there's no obvious way of breaking out otherwise
-        jump.id = toLabel
+        jump.label = toLabel.text
         throw jump
     }
     
