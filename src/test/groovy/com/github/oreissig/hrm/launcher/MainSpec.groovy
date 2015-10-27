@@ -46,6 +46,5 @@ class MainSpec extends Specification {
         then:
         1 * i.readLine() >> '23'
         1 * o.println('24')
-        0 * _
     }
 }

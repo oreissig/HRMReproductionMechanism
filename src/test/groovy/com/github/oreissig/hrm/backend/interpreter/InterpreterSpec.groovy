@@ -27,6 +27,7 @@ class InterpreterSpec extends AbstractHRMSpec
         walker.interpret(parse())
         
         then:
+        // no invocations at all
         0 * _
     }
     
@@ -43,7 +44,6 @@ class InterpreterSpec extends AbstractHRMSpec
         then:
         1 * i.readLine() >> value
         1 * o.println(value)
-        0 * _
         
         where:
         value << [23, -42, 0, Integer.MAX_VALUE, Integer.MIN_VALUE]*.toString()
@@ -58,7 +58,6 @@ class InterpreterSpec extends AbstractHRMSpec
         
         then:
         1 * i.readLine() >> null
-        0 * _
         InterpreterException ex = thrown()
         ex.message == 'The end of the inbox has been reached!'
     }
@@ -78,7 +77,6 @@ class InterpreterSpec extends AbstractHRMSpec
         thrown(EmptyHandsException)
         1 * i.readLine() >> '23'
         1 * o.println('23')
-        0 * _
     }
     
     def 'copy from/to work (#value)'(value) {
@@ -105,7 +103,6 @@ class InterpreterSpec extends AbstractHRMSpec
         1 * o.println('456')
         then:
         1 * o.println('123')
-        0 * _
         
         where:
         value << [10, InterpreterListener.MAX_TILE-1, 0]
@@ -130,7 +127,6 @@ class InterpreterSpec extends AbstractHRMSpec
             1 * readLine() >> a
         }
         1 * o.println(sum.toString())
-        0 * _
         
         where:
         a   | b   | sum
@@ -161,7 +157,6 @@ class InterpreterSpec extends AbstractHRMSpec
             1 * readLine() >> a
         }
         1 * o.println(diff.toString())
-        0 * _
         
         where:
         a   | b   | diff
@@ -188,7 +183,6 @@ class InterpreterSpec extends AbstractHRMSpec
         then:
         1 * i.readLine() >> value
         1 * o.println(result.toString())
-        0 * _
         
         where:
         bump    | value | result
@@ -212,7 +206,6 @@ class InterpreterSpec extends AbstractHRMSpec
         then:
         1 * i.readLine() >> '23'
         1 * o.println('23')
-        0 * _
     }
     
     def 'jump throws exception for unknown label'() {
@@ -243,7 +236,6 @@ class InterpreterSpec extends AbstractHRMSpec
         then:
         i.readLine() >>> [value, didJump, didNotJump]
         1 * o.println(result)
-        0 * _
         
         where:
         value | result
@@ -269,7 +261,6 @@ class InterpreterSpec extends AbstractHRMSpec
         then:
         i.readLine() >>> [value, didJump, didNotJump]
         1 * o.println(result)
-        0 * _
         
         where:
         value | result
