@@ -1,4 +1,4 @@
-package com.github.oreissig.hrm
+package com.github.oreissig.hrm.launcher
 
 import groovy.transform.CompileStatic
 

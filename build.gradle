@@ -3,7 +3,7 @@ apply plugin: 'antlr'
 apply plugin: 'application'
 
 // configure application
-mainClassName = 'com.github.oreissig.hrm.Main'
+mainClassName = 'com.github.oreissig.hrm.launcher.Main'
 if (project.hasProperty('args'))
     run.args = args.split(' ') as List
 
