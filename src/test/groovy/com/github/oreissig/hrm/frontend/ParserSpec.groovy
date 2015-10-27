@@ -51,6 +51,23 @@ class ParserSpec extends AbstractHRMSpec
         'assembly comment' | '-- foo bazbazbaz'
     }
     
+    def 'blobs are ignored'()
+    {
+        given:
+        input = '''\
+                DEFINE foo bar
+                asdf!+-
+                123/456;
+                '''
+        
+        when:
+        def tree = parse()
+        
+        then:
+        checkErrorFree(tree)
+        tree.statement().empty
+    }
+    
     def 'human-readable #name statements parse successfully'(name, src, type, check)
     {
         given:

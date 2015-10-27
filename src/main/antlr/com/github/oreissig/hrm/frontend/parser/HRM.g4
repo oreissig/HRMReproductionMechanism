@@ -39,5 +39,5 @@ jumpneg   : ('jump' 'if' 'negative'|'JUMPN') ID;
 ID      : [a-z]+ ;
 NUMBER  : [0-9]+ ;
 WS      : [ \t\r\n\[\]]+ -> skip ; // skip spaces, tabs, newlines
-Comment : ('...'|'--'|'COMMENT') ~('\n')* '\n' -> skip;
-Blob    : 'DEFINE ' ~(';')* '\n' -> skip;
+Comment : ('...'|'--'|'COMMENT') .*? '\n' -> skip;
+Blob    : 'DEFINE ' .*? ';' -> skip;
