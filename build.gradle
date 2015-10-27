@@ -6,6 +6,7 @@ apply plugin: 'application'
 mainClassName = 'com.github.oreissig.hrm.launcher.Main'
 if (project.hasProperty('args'))
     run.args = args.split(' ') as List
+run.standardInput = System.in
 
 // configure code coverage
 apply plugin: 'jacoco'
