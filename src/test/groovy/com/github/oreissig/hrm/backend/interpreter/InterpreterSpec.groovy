@@ -50,7 +50,7 @@ class InterpreterSpec extends AbstractHRMSpec
         value << [23, -42, 0, Integer.MAX_VALUE, Integer.MIN_VALUE]*.toString()
     }
     
-    def 'inbox end is signaled'() {
+    def 'inbox end is signaled'(value) {
         given:
         input = 'inbox'
         
@@ -58,9 +58,12 @@ class InterpreterSpec extends AbstractHRMSpec
         walker.interpret(parse())
         
         then:
-        1 * i.readLine() >> null
+        1 * i.readLine() >> value
         InterpreterException ex = thrown()
         ex.message == 'The end of the inbox has been reached!'
+        
+        where:
+        value << [null, '']
     }
     
     def 'outbox clears the hand value'() {
