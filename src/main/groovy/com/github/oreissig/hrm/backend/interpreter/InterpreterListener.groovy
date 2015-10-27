@@ -31,7 +31,10 @@ class InterpreterListener extends HRMBaseListener {
     
     @Override
     void enterInbox(InboxContext ctx) {
-        hands = input.readLine() as int
+        def raw = input.readLine()
+        if (raw == null)
+            throw new InterpreterException('The end of the inbox has been reached!', ctx)
+        hands = raw as int
     }
     
     @Override
