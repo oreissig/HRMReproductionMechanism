@@ -6,6 +6,8 @@ import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.Lexer
 import org.antlr.v4.runtime.Parser
 import org.antlr.v4.runtime.TokenStream
+import org.antlr.v4.runtime.tree.ParseTree
+import org.antlr.v4.runtime.tree.ParseTreeWalker
 
 import spock.lang.Specification
 
@@ -43,5 +45,10 @@ abstract class AntlrSpec<P extends Parser> extends Specification {
 	 */
 	P getParser() {
 		parserClass.newInstance(tokenStream)
+	}
+
+	void checkErrorFree(ParseTree tree)
+	{
+		ParseTreeWalker.DEFAULT.walk(new NoErrorListener(), tree)
 	}
 }

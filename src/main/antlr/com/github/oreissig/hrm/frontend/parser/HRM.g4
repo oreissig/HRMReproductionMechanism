@@ -39,4 +39,4 @@ jumpneg   : 'jump' 'if' 'negative' ID;
 ID     : [a-z]+ ;
 NUMBER : [0-9]+ ;
 WS : [ \t\r\n]+ -> skip ; // skip spaces, tabs, newlines
-Comment : '...' ~( '\r' | '\n' )* -> skip;
+Comment : '...' ~('\n')* '\n' -> skip;

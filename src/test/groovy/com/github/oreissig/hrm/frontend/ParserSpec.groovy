@@ -1,11 +1,8 @@
 package com.github.oreissig.hrm.frontend
 
-import org.antlr.v4.runtime.tree.ParseTreeWalker
-
 import spock.lang.Unroll
 
 import com.github.oreissig.hrm.AbstractHRMSpec
-import com.github.oreissig.hrm.NoErrorListener
 import com.github.oreissig.hrm.frontend.parser.HRMParser.AddContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.CopyfromContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.CopytoContext
@@ -31,6 +28,7 @@ class ParserSpec extends AbstractHRMSpec
         def tree = parse()
         
         then:
+        checkErrorFree(tree)
         tree.statement().empty
     }
     
@@ -43,6 +41,7 @@ class ParserSpec extends AbstractHRMSpec
         def tree = parse()
         
         then:
+        checkErrorFree(tree)
         tree.statement().empty
     }
     
@@ -55,6 +54,7 @@ class ParserSpec extends AbstractHRMSpec
         def tree = parse()
         
         then:
+        checkErrorFree(tree)
         tree.statement().size() == 1
         def statement = tree.statement().first()
         def expression = statement.expression()
@@ -88,8 +88,12 @@ class ParserSpec extends AbstractHRMSpec
         copyfrom 123
         '''.stripIndent()
         
-        expect:
-        parse().statement().size() == 2
+        when:
+        def tree = parse()
+        
+        then:
+        checkErrorFree(tree)
+        tree.statement().size() == 2
     }
 
     def 'trailing new-line is optional'()
@@ -99,9 +103,8 @@ class ParserSpec extends AbstractHRMSpec
         
         when:
         def tree = parse()
-        ParseTreeWalker.DEFAULT.walk(new NoErrorListener(), tree)
         
         then:
-        noExceptionThrown()
+        checkErrorFree(tree)
     }
 }
