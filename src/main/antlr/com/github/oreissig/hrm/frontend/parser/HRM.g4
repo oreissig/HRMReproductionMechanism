@@ -36,7 +36,7 @@ jump      : 'jump' ID;
 jumpzero  : 'jump' 'if' 'zero' ID;
 jumpneg   : 'jump' 'if' 'negative' ID;
 
-ID     : [a-z]+ ;
-NUMBER : [0-9]+ ;
-WS : [ \t\r\n]+ -> skip ; // skip spaces, tabs, newlines
+ID      : [a-z]+ ;
+NUMBER  : [0-9]+ ;
+WS      : [ \t\r\n]+ -> skip ; // skip spaces, tabs, newlines
 Comment : '...' ~('\n')* '\n' -> skip;
