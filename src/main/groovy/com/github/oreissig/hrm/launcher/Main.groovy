@@ -23,12 +23,9 @@ def file = options.arguments()[0]
 
 if (!file) {
     cli.usage()
-    System.exit(1)
 } else {
     interpret(file)
 }
-
-System.exit(0)
 
 
 @CompileStatic
