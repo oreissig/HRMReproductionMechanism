@@ -38,6 +38,7 @@ jumpneg   : ('jump' 'if' 'negative'|'JUMPN') ID;
 
 ID      : [a-z]+ ;
 NUMBER  : [0-9]+ ;
-WS      : [ \t\r\n\[\]]+ -> skip ; // skip spaces, tabs, newlines
-Comment : ('...'|'--'|'COMMENT') .*? '\n' -> skip;
+// skip spaces, tabs, newlines, brackets (used by asm)
+WS      : [ \t\r\n\[\]]+ -> skip;
+Comment : ('...'|'--'|'COMMENT') ~('\n')* -> skip;
 Blob    : 'DEFINE ' .*? ';' -> skip;
