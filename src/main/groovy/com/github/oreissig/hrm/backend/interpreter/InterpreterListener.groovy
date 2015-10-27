@@ -20,8 +20,8 @@ import com.github.oreissig.hrm.frontend.parser.HRMParser.SubContext
 
 @CompileStatic
 class InterpreterListener extends HRMBaseListener {
-    static PrintStream output = System.out
-    static InputStream input = System.'in'
+    static PrintWriter output = System.out.newPrintWriter()
+    static BufferedReader input = System.'in'.newReader()
     static int MAX_TILE = 9001
     
     final Integer[] floor = new Integer[MAX_TILE]
@@ -31,13 +31,13 @@ class InterpreterListener extends HRMBaseListener {
     
     @Override
     void enterInbox(InboxContext ctx) {
-        hands = input.read()
+        hands = input.readLine() as int
     }
     
     @Override
     void enterOutbox(OutboxContext ctx) {
         checkEmptyHands(ctx)
-        output.print hands
+        output.println(hands as String)
         hands = null
     }
     

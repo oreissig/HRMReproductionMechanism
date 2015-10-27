@@ -1,5 +1,8 @@
 package com.github.oreissig.hrm.launcher
 
+import java.io.BufferedReader;
+import java.io.PrintWriter;
+
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 
@@ -8,8 +11,8 @@ import spock.lang.Specification
 import com.github.oreissig.hrm.backend.interpreter.InterpreterListener
 
 class MainSpec extends Specification {
-    def i = Mock(InputStream)
-    def o = Mock(PrintStream)
+    BufferedReader i = Mock()
+    PrintWriter o = Mock()
     
     @Rule
     TemporaryFolder dir = new TemporaryFolder()
@@ -41,8 +44,8 @@ class MainSpec extends Specification {
         Main.main(src.absolutePath)
         
         then:
-        1 * i.read() >> 23
-        1 * o.print(24)
+        1 * i.readLine() >> '23'
+        1 * o.println('24')
         0 * _
     }
 }

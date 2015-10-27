@@ -7,12 +7,12 @@ import com.github.oreissig.hrm.AbstractHRMSpec
 @Unroll
 class InterpreterSpec extends AbstractHRMSpec
 {
-    static final didJump = 1
-    static final didNotJump = 2
+    static final didJump = '1'
+    static final didNotJump = '2'
     
     def walker = new InterpreterWalker()
-    def i = Mock(InputStream)
-    def o = Mock(PrintStream)
+    BufferedReader i = Mock()
+    PrintWriter o = Mock()
     
     def setup() {
         InterpreterListener.input = i
@@ -41,12 +41,12 @@ class InterpreterSpec extends AbstractHRMSpec
         walker.interpret(parse())
         
         then:
-        1 * i.read() >> value
-        1 * o.print(value)
+        1 * i.readLine() >> value
+        1 * o.println(value)
         0 * _
         
         where:
-        value << [23, -42, 0, Integer.MAX_VALUE, Integer.MIN_VALUE]
+        value << [23, -42, 0, Integer.MAX_VALUE, Integer.MIN_VALUE]*.toString()
     }
     
     def 'outbox clears the hand value'() {
@@ -62,8 +62,8 @@ class InterpreterSpec extends AbstractHRMSpec
         
         then:
         thrown(EmptyHandsException)
-        1 * i.read() >> 23
-        1 * o.print(23)
+        1 * i.readLine() >> '23'
+        1 * o.println('23')
         0 * _
     }
     
@@ -84,13 +84,13 @@ class InterpreterSpec extends AbstractHRMSpec
         
         then:
         with(i) {
-            1 * read() >> 123
-            1 * read() >> 456
+            1 * readLine() >> '123'
+            1 * readLine() >> '456'
         }
         then:
-        1 * o.print(456)
+        1 * o.println('456')
         then:
-        1 * o.print(123)
+        1 * o.println('123')
         0 * _
         
         where:
@@ -112,10 +112,10 @@ class InterpreterSpec extends AbstractHRMSpec
         
         then:
         with(i) {
-            1 * read() >> b
-            1 * read() >> a
+            1 * readLine() >> b
+            1 * readLine() >> a
         }
-        1 * o.print(sum)
+        1 * o.println(sum.toString())
         0 * _
         
         where:
@@ -143,10 +143,10 @@ class InterpreterSpec extends AbstractHRMSpec
         
         then:
         with(i) {
-            1 * read() >> b
-            1 * read() >> a
+            1 * readLine() >> b
+            1 * readLine() >> a
         }
-        1 * o.print(diff)
+        1 * o.println(diff.toString())
         0 * _
         
         where:
@@ -172,8 +172,8 @@ class InterpreterSpec extends AbstractHRMSpec
         walker.interpret(parse())
         
         then:
-        1 * i.read() >> value
-        1 * o.print(result)
+        1 * i.readLine() >> value
+        1 * o.println(result.toString())
         0 * _
         
         where:
@@ -196,8 +196,8 @@ class InterpreterSpec extends AbstractHRMSpec
         walker.interpret(parse())
         
         then:
-        1 * i.read() >> 23
-        1 * o.print(23)
+        1 * i.readLine() >> '23'
+        1 * o.println('23')
         0 * _
     }
     
@@ -227,15 +227,15 @@ class InterpreterSpec extends AbstractHRMSpec
         walker.interpret(parse())
         
         then:
-        i.read() >>> [value, didJump, didNotJump]
-        1 * o.print(result)
+        i.readLine() >>> [value, didJump, didNotJump]
+        1 * o.println(result)
         0 * _
         
         where:
         value | result
-        -3    | 2
-         3    | 2
-         0    | 1
+        -3    | didNotJump
+         3    | didNotJump
+         0    | didJump
     }
     
     def 'jump if negative works (#value)'(value, result) {
@@ -253,8 +253,8 @@ class InterpreterSpec extends AbstractHRMSpec
         walker.interpret(parse())
         
         then:
-        i.read() >>> [value, didJump, didNotJump]
-        1 * o.print(result)
+        i.readLine() >>> [value, didJump, didNotJump]
+        1 * o.println(result)
         0 * _
         
         where:
@@ -290,7 +290,7 @@ class InterpreterSpec extends AbstractHRMSpec
     
     def 'empty tile throws exception for "#name"'(name, src) {
         given:
-        i.read() >> 0
+        i.readLine() >> '0'
         input = """\
                 inbox
                 $src
