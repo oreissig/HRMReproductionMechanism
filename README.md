@@ -18,7 +18,7 @@ To interpret a HRM program just run `gradlew run -Pargs=YourSource.hrm`.
 * `sub #NUM` subtracts the given floor tile's value from the current hand value
 * `bump+ #NUM` increses the given floor tile's value by one
 * `bump- #NUM` decreses the given floor tile's value by one
-* `:#LABEL` defines a label you can jump to
+* `#LABEL:` defines a label you can jump to
 * `jump #LABEL` continues execution at the given label
 * `jump if zero #LABEL` continues execution at the given label only if the current hand value is zero
 * `jump if negative #LABEL` continues execution at the given label only if the current hand value is negative

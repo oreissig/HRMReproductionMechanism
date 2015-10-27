@@ -1,11 +1,9 @@
 package com.github.oreissig.hrm.backend.interpreter
 
-import spock.lang.Stepwise
 import spock.lang.Unroll
 
 import com.github.oreissig.hrm.AbstractHRMSpec
 
-@Stepwise
 @Unroll
 class InterpreterSpec extends AbstractHRMSpec
 {
@@ -190,7 +188,7 @@ class InterpreterSpec extends AbstractHRMSpec
                 inbox
                 jump foo
                 inbox
-                :foo
+                foo:
                 outbox
                 """.stripIndent()
         
@@ -220,7 +218,7 @@ class InterpreterSpec extends AbstractHRMSpec
                 inbox
                 jump if zero foo
                 inbox
-                :foo
+                foo:
                 inbox
                 outbox
                 """.stripIndent()
@@ -246,7 +244,7 @@ class InterpreterSpec extends AbstractHRMSpec
                 inbox
                 jump if negative foo
                 inbox
-                :foo
+                foo:
                 inbox
                 outbox
                 """.stripIndent()

@@ -31,7 +31,7 @@ add       : 'add' NUMBER;
 sub       : 'sub' NUMBER;
 increment : 'bump+' NUMBER;
 decrement : 'bump-' NUMBER;
-label     : ':' ID;
+label     : ID ':';
 jump      : 'jump' ID;
 jumpzero  : 'jump' 'if' 'zero' ID;
 jumpneg   : 'jump' 'if' 'negative' ID;

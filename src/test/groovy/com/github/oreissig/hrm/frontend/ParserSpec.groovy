@@ -73,7 +73,7 @@ class ParserSpec extends AbstractHRMSpec
         'sub'       | 'sub 123'              | SubContext       | { assert it.NUMBER().text == '123' }
         'increment' | 'bump+ 123'            | IncrementContext | { assert it.NUMBER().text == '123' }
         'decrement' | 'bump- 123'            | DecrementContext | { assert it.NUMBER().text == '123' }
-        'label'     | ':thelabel'            | LabelContext     | { assert it.ID().text == 'thelabel' }
+        'label'     | 'thelabel:'            | LabelContext     | { assert it.ID().text == 'thelabel' }
         'jump'      | 'jump foo'             | JumpContext      | { assert it.ID().text == 'foo' }
         'jumpzero'  | 'jump if zero foo'     | JumpzeroContext  | { assert it.ID().text == 'foo' }
         'jumpneg'   | 'jump if negative foo' | JumpnegContext   | { assert it.ID().text == 'foo' }
