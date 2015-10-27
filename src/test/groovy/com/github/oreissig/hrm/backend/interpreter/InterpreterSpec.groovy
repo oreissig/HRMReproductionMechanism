@@ -323,4 +323,23 @@ class InterpreterSpec extends AbstractHRMSpec
         'bump+'            | 'bump+ 1'
         'bump-'            | 'bump- 1'
     }
+    
+    def 'literal mode initializes tiles with their index'() {
+        given:
+        InterpreterListener.LITERAL_MODE = true
+        input = '''\
+                copyfrom 42
+                sub 23
+                outbox
+                '''.stripIndent()
+        
+        when:
+        walker.interpret(parse())
+        
+        then:
+        1 * o.println('19')
+        
+        cleanup:
+        InterpreterListener.LITERAL_MODE = false
+    }
 }

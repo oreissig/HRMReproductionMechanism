@@ -23,6 +23,7 @@ class InterpreterListener extends HRMBaseListener {
     static PrintWriter output = System.out.newPrintWriter()
     static BufferedReader input = System.'in'.newReader()
     static int MAX_TILE = 9001
+    static boolean LITERAL_MODE = System.properties['literal'].asBoolean()
     
     final Integer[] floor = new Integer[MAX_TILE]
     Integer hands = null
@@ -133,7 +134,11 @@ class InterpreterListener extends HRMBaseListener {
     }
     
     private void checkEmptyTile(ParserRuleContext ctx, int pointer) throws EmptyTileException {
-        if (floor[pointer] == null)
-            throw new EmptyTileException(ctx)
+        if (floor[pointer] == null) {
+            if (LITERAL_MODE)
+                floor[pointer] = pointer
+            else
+                throw new EmptyTileException(ctx)
+        }
     }
 }
