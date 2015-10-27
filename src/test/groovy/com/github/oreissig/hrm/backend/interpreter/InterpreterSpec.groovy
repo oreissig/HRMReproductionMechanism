@@ -42,6 +42,7 @@ class InterpreterSpec extends AbstractHRMSpec
         walker.interpret(parse())
         
         then:
+        1 * o.print('> ')
         1 * i.readLine() >> value
         1 * o.println(value)
         

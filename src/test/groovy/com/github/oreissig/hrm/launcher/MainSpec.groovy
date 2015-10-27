@@ -1,8 +1,5 @@
 package com.github.oreissig.hrm.launcher
 
-import java.io.BufferedReader;
-import java.io.PrintWriter;
-
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 
