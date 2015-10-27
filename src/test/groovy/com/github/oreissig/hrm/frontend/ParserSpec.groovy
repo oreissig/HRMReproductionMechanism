@@ -32,10 +32,10 @@ class ParserSpec extends AbstractHRMSpec
         tree.statement().empty
     }
     
-    def 'comments parse successfully'()
+    def 'comments are ignored (#style style)'(style,src)
     {
         given:
-        input = '... foo bar'
+        input = src
         
         when:
         def tree = parse()
@@ -43,9 +43,15 @@ class ParserSpec extends AbstractHRMSpec
         then:
         checkErrorFree(tree)
         tree.statement().empty
+        
+        where:
+        style              | src
+        'human'            | '... foo barbarbar'
+        'assembly'         | 'COMMENT 1'
+        'assembly comment' | '-- foo bazbazbaz'
     }
     
-    def '#name statements parse successfully'(name, src, type, check)
+    def 'human-readable #name statements parse successfully'(name, src, type, check)
     {
         given:
         input = src
@@ -78,12 +84,47 @@ class ParserSpec extends AbstractHRMSpec
         'jumpzero'  | 'jump if zero foo'     | JumpzeroContext  | { assert it.ID().text == 'foo' }
         'jumpneg'   | 'jump if negative foo' | JumpnegContext   | { assert it.ID().text == 'foo' }
     }
+    
+    def 'assembly #name statements parse successfully'(name, src, type, check)
+    {
+        given:
+        input = src
+        
+        when:
+        def tree = parse()
+        
+        then:
+        checkErrorFree(tree)
+        tree.statement().size() == 1
+        def statement = tree.statement().first()
+        def expression = statement.expression()
+        def exprType = expression."$name"()
+        exprType
+        exprType.class == type
+        check(exprType) || true // ignore return value, check happens inside closure
+        
+        where:
+        name        | src            | type             | check
+        'inbox'     | 'INBOX'        | InboxContext     | { /* nothing to do here */ }
+        'outbox'    | 'OUTBOX'       | OutboxContext    | { /* nothing to do here */ }
+        'copyfrom'  | 'COPYFROM 123' | CopyfromContext  | { assert it.NUMBER().text == '123' }
+        'copyto'    | 'COPYTO [123]' | CopytoContext    | { assert it.NUMBER().text == '123' }
+        'add'       | 'ADD 123'      | AddContext       | { assert it.NUMBER().text == '123' }
+        'sub'       | 'SUB [123]'    | SubContext       | { assert it.NUMBER().text == '123' }
+        'increment' | 'BUMPUP 123'   | IncrementContext | { assert it.NUMBER().text == '123' }
+        'decrement' | 'BUMPDN [123]' | DecrementContext | { assert it.NUMBER().text == '123' }
+        // label is the same as the human-readable one
+        'jump'      | 'JUMP foo'     | JumpContext      | { assert it.ID().text == 'foo' }
+        'jumpzero'  | 'JUMPZ foo'    | JumpzeroContext  | { assert it.ID().text == 'foo' }
+        'jumpneg'   | 'JUMPN foo'    | JumpnegContext   | { assert it.ID().text == 'foo' }
+    }
 
     def 'multiple statements are parsed successfully'()
     {
         given:
         input = '''\
         inbox
+        
         ... barbarbarbarbar
         copyfrom 123
         '''.stripIndent()
@@ -93,7 +134,7 @@ class ParserSpec extends AbstractHRMSpec
         
         then:
         checkErrorFree(tree)
-        tree.statement().size() == 2
+        tree.statement()*.text.size() == 2
     }
 
     def 'trailing new-line is optional'()

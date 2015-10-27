@@ -7,7 +7,7 @@ package com.github.oreissig.hrm.frontend.parser;
 
 program : statement*;
 
-statement : expression '\r'? '\n'?;
+statement : expression '\n'?;
 
 expression : inbox
            | outbox
@@ -23,20 +23,21 @@ expression : inbox
            | jumpneg
            ;
 
-inbox     : 'inbox';
-outbox    : 'outbox';
-copyfrom  : 'copyfrom' NUMBER;
-copyto    : 'copyto' NUMBER;
-add       : 'add' NUMBER;
-sub       : 'sub' NUMBER;
-increment : 'bump+' NUMBER;
-decrement : 'bump-' NUMBER;
+inbox     : 'inbox'|'INBOX';
+outbox    : 'outbox'|'OUTBOX';
+copyfrom  : ('copyfrom'|'COPYFROM') NUMBER;
+copyto    : ('copyto'|'COPYTO') NUMBER;
+add       : ('add'|'ADD') NUMBER;
+sub       : ('sub'|'SUB') NUMBER;
+increment : ('bump+'|'BUMPUP') NUMBER;
+decrement : ('bump-'|'BUMPDN') NUMBER;
 label     : ID ':';
-jump      : 'jump' ID;
-jumpzero  : 'jump' 'if' 'zero' ID;
-jumpneg   : 'jump' 'if' 'negative' ID;
+jump      : ('jump'|'JUMP') ID;
+jumpzero  : ('jump' 'if' 'zero'|'JUMPZ') ID;
+jumpneg   : ('jump' 'if' 'negative'|'JUMPN') ID;
 
 ID      : [a-z]+ ;
 NUMBER  : [0-9]+ ;
-WS      : [ \t\r\n]+ -> skip ; // skip spaces, tabs, newlines
-Comment : '...' ~('\n')* '\n' -> skip;
+WS      : [ \t\r\n\[\]]+ -> skip ; // skip spaces, tabs, newlines
+Comment : ('...'|'--'|'COMMENT') ~('\n')* '\n' -> skip;
+Blob    : 'DEFINE ' ~(';')* '\n' -> skip;
