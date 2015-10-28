@@ -1,5 +1,8 @@
 package com.github.oreissig.hrm
 
+import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
+
 import org.antlr.v4.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CharStream
 import org.antlr.v4.runtime.CommonTokenStream
@@ -11,6 +14,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker
 
 import spock.lang.Specification
 
+@CompileStatic
 abstract class AntlrSpec<P extends Parser> extends Specification {
 	/**
 	 * @return Lexer class to instantiate
@@ -28,6 +32,7 @@ abstract class AntlrSpec<P extends Parser> extends Specification {
 	 */
 	def input
 
+	@CompileStatic(TypeCheckingMode.SKIP)
 	CharStream getCharStream() {
 		new ANTLRInputStream(input)
 	}
