@@ -31,3 +31,15 @@ Executing `gradlew build` will generate a stand-alone distribution into `build/d
 * As replacement for the graphical representation of jump targets you can declare labels and use those to designate a jump's destination.
 * Lots of tiles are available on the floor, per default there are 9000.
 * You can enable _literal mode_ with `-Dliteral=true`, which preinitializes all floor tiles with their their index. This allows you to `copyfrom 23` to get _23_ into your hands, as long as you haven't put anything on tile 23.
+
+### Details
+
+_Implemented:_
+* ANTLRv4 based parser
+* direct interpreter
+* nice stack trace in case of error
+
+_TODO:_
+* optimizations
+* compiler
+* marketing brochures
