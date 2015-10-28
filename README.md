@@ -8,6 +8,8 @@ An implementation of the [Human Resource Machine](http://tomorrowcorporation.com
 
 To interpret a HRM program just run `gradlew run -Pargs=YourSource.hrm`.
 
+Executing `gradlew build` will generate a stand-alone distribution into `build/distributions`.
+
 ### Language Guide
 
 * `inbox` reads the next hand value from stdin
