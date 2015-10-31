@@ -10,6 +10,7 @@ import com.github.oreissig.hrm.frontend.parser.HRMParser.AddContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.CopyfromContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.CopytoContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.DecrementContext
+import com.github.oreissig.hrm.frontend.parser.HRMParser.DumpContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.InboxContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.IncrementContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.JumpContext
@@ -115,6 +116,16 @@ class InterpreterListener extends HRMBaseListener {
         checkEmptyHands(ctx)
         if (hands == 0) {
             jump(ctx.ID())
+        }
+    }
+    
+    @Override
+    void enterDump(DumpContext ctx) {
+        output.println 'HANDS: ' + (hands ?: 'empty')
+        floor.eachWithIndex { value, i ->
+            if (value) {
+                output.println "FLOOR TILE $i: $value"
+            }
         }
     }
     

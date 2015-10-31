@@ -342,4 +342,28 @@ class InterpreterSpec extends AbstractHRMSpec
         cleanup:
         InterpreterListener.LITERAL_MODE = false
     }
+    
+    def 'debug info can be printed with #operation'(operation) {
+        given:
+        input = """\
+                inbox
+                copyto 1
+                copyto 5
+                bump+ 5
+                $operation
+                """.stripIndent()
+        
+        when:
+        walker.interpret(parse())
+        
+        then:
+        1 * i.readLine() >> 23
+        1 * o.println('HANDS: 24')
+        1 * o.println('FLOOR TILE 1: 23')
+        1 * o.println('FLOOR TILE 5: 24')
+        0 * o.println(_) // no output for empty tiles
+        
+        where:
+        operation << ['dump', 'DUMP']
+    }
 }

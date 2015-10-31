@@ -21,6 +21,7 @@ expression : inbox
            | jump
            | jumpzero
            | jumpneg
+           | dump
            ;
 
 inbox     : 'inbox'|'INBOX';
@@ -35,6 +36,7 @@ label     : ID ':';
 jump      : ('jump'|'JUMP') ID;
 jumpzero  : ('jump' 'if' 'zero'|'JUMPZ') ID;
 jumpneg   : ('jump' 'if' 'negative'|'JUMPN') ID;
+dump      : 'dump'|'DUMP';
 
 ID      : [a-z]+ ;
 NUMBER  : [0-9]+ ;
