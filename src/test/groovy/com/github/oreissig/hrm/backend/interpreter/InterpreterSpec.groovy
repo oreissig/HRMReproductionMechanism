@@ -59,7 +59,7 @@ class InterpreterSpec extends AbstractHRMSpec
         
         then:
         1 * i.readLine() >> value
-        InterpreterException ex = thrown()
+        EmptyInboxException ex = thrown()
         ex.message == 'The end of the inbox has been reached!'
         
         where:

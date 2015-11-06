@@ -37,7 +37,7 @@ class InterpreterListener extends HRMBaseListener {
         output.flush()
         def raw = input.readLine()
         if (raw == null || raw.empty)
-            throw new InterpreterException('The end of the inbox has been reached!', ctx)
+            throw new EmptyInboxException(ctx)
         hands = raw as int
     }
     
