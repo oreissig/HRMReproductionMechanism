@@ -2,6 +2,11 @@ package com.github.oreissig.hrm
 
 import groovy.transform.CompileStatic
 
+import org.antlr.v4.runtime.tree.ErrorNode
+import org.antlr.v4.runtime.tree.ParseTree
+import org.antlr.v4.runtime.tree.ParseTreeWalker
+
+import com.github.oreissig.hrm.frontend.parser.HRMBaseListener
 import com.github.oreissig.hrm.frontend.parser.HRMLexer
 import com.github.oreissig.hrm.frontend.parser.HRMParser
 import com.github.oreissig.hrm.frontend.parser.HRMParser.ProgramContext
@@ -14,5 +19,18 @@ abstract class AbstractHRMSpec extends AntlrSpec<HRMParser>
 	
 	ProgramContext parse() {
 		parser.program()
+	}
+	
+	void checkErrorFree(ParseTree tree)
+	{
+		ParseTreeWalker.DEFAULT.walk(new NoErrorListener(), tree)
+	}
+	
+	@CompileStatic
+	private static class NoErrorListener extends HRMBaseListener {
+		@Override
+		void visitErrorNode(ErrorNode node) {
+			throw new Exception(node.symbol.toString())
+		}
 	}
 }

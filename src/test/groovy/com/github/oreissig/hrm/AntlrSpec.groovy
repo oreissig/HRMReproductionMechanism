@@ -8,13 +8,7 @@ import org.antlr.v4.runtime.CharStream
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.Lexer
 import org.antlr.v4.runtime.Parser
-import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.TokenStream
-import org.antlr.v4.runtime.tree.ErrorNode
-import org.antlr.v4.runtime.tree.ParseTree
-import org.antlr.v4.runtime.tree.ParseTreeListener
-import org.antlr.v4.runtime.tree.ParseTreeWalker
-import org.antlr.v4.runtime.tree.TerminalNode
 
 import spock.lang.Specification
 
@@ -54,33 +48,5 @@ abstract class AntlrSpec<P extends Parser> extends Specification {
 	 */
 	P getParser() {
 		parserClass.newInstance(tokenStream)
-	}
-
-	void checkErrorFree(ParseTree tree)
-	{
-		ParseTreeWalker.DEFAULT.walk(new NoErrorListener(), tree)
-	}
-	
-	@CompileStatic
-	private static class NoErrorListener implements ParseTreeListener {
-		@Override
-		void visitErrorNode(ErrorNode node) {
-			throw new Exception(node.symbol.toString())
-		}
-		
-		@Override
-		void visitTerminal(TerminalNode node) {
-			// do nothing
-		}
-		
-		@Override
-		void enterEveryRule(ParserRuleContext ctx) {
-			// do nothing
-		}
-		
-		@Override
-		void exitEveryRule(ParserRuleContext ctx) {
-			// do nothing
-		}
 	}
 }
