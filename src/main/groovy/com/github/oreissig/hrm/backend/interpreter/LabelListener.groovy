@@ -1,7 +1,7 @@
 package com.github.oreissig.hrm.backend.interpreter
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
 
 import com.github.oreissig.hrm.frontend.parser.HRMBaseListener
 import com.github.oreissig.hrm.frontend.parser.HRMParser
@@ -15,7 +15,7 @@ class LabelListener extends HRMBaseListener {
     }
 
     // somehow type check fails on TravisCI
-    @CompileStatic(TypeCheckingMode.SKIP)
+    @CompileDynamic
     @Override
     void enterLabel(HRMParser.LabelContext ctx) {
         def label = ctx.ID().text

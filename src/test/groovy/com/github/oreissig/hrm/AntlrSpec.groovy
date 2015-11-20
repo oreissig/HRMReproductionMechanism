@@ -1,7 +1,7 @@
 package com.github.oreissig.hrm
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
 
 import org.antlr.v4.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CharStream
@@ -30,7 +30,7 @@ abstract class AntlrSpec<P extends Parser> extends Specification {
 	 */
 	def input
 
-	@CompileStatic(TypeCheckingMode.SKIP)
+	@CompileDynamic
 	CharStream getCharStream() {
 		new ANTLRInputStream(input)
 	}
