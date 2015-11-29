@@ -429,6 +429,27 @@ class InterpreterSpec extends AbstractHRMSpec
         'BUMPDN'   | 'BUMPDN 1'
     }
     
+    def 'indirect addressing throws exception for empty #type tile'(type,addr) {
+        given:
+        i.readLine() >> '2'
+        input = """\
+                INBOX
+                COPYTO 1
+                COPYFROM [$addr]
+                """.stripIndent()
+        
+        when:
+        walker.interpret(parse())
+        
+        then:
+        thrown(EmptyTileException)
+        
+        where:
+        type       | addr
+        'pointer'  | 2
+        'resolved' | 1
+    }
+    
     def 'literal mode initializes tiles with their index'() {
         given:
         InterpreterListener.LITERAL_MODE = true
