@@ -31,10 +31,10 @@ class ParserSpec extends AbstractHRMSpec
         tree.statement().empty
     }
     
-    def 'comments are ignored (#style style)'(style,src)
+    def 'header-like comments are ignored'()
     {
         given:
-        input = src
+        input = '-- foo bazbazbaz'
         
         when:
         def tree = parse()
@@ -42,11 +42,21 @@ class ParserSpec extends AbstractHRMSpec
         then:
         checkErrorFree(tree)
         tree.statement().empty
+    }
+    
+    def 'code comments are parsed correctly'()
+    {
+        given:
+        input = 'COMMENT 1'
         
-        where:
-        style              | src
-        'code'   | 'COMMENT 1'
-        'header' | '-- foo bazbazbaz'
+        when:
+        def tree = parse()
+        
+        then:
+        checkErrorFree(tree)
+        tree.statement().size() == 1
+        def comment = tree.statement(0).expression().comment()
+        comment.NUMBER().text == '1'
     }
     
     def 'blobs are ignored'()
@@ -106,7 +116,7 @@ class ParserSpec extends AbstractHRMSpec
         input = '''\
         INBOX
         
-        ... barbarbarbarbar
+        -- barbarbarbarbar
         COPYFROM 123
         '''.stripIndent()
         

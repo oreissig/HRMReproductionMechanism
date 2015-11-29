@@ -21,6 +21,7 @@ expression : inbox
            | jumpz
            | jumpn
            | dump
+           | comment
            ;
 
 inbox    : 'INBOX';
@@ -36,10 +37,11 @@ jump     : 'JUMP' ID;
 jumpz    : 'JUMPZ' ID;
 jumpn    : 'JUMPN' ID;
 dump     : 'DUMP';
+comment  : 'COMMENT' NUMBER;
 
 ID      : [a-z]+ ;
 NUMBER  : [0-9]+ ;
 // skip spaces, tabs, newlines, brackets (used by asm)
 WS      : [ \t\r\n\[\]]+ -> skip;
-Comment : ('...'|'--'|'COMMENT') ~('\n')* -> skip;
+Comment : '--' ~('\n')* -> skip;
 Blob    : 'DEFINE ' .*? ';' -> skip;

@@ -25,13 +25,14 @@ Executing `gradlew build` will generate a stand-alone distribution into `build/d
 * `JUMP #LABEL` continues execution at the given label
 * `JUMPZ #LABEL` continues execution at the given label only if the current hand value is zero
 * `JUMPN #LABEL` continues execution at the given label only if the current hand value is negative
-* `...` marks the beginning of a new comment line
+* `--` or `COMMENT` mark the beginning of a new comment line
 
 ### Differences
 
 * As replacement for the graphical representation of jump targets you can declare labels and use those to designate a jump's destination.
+* Binary content e.g. comments and custom floor tile names are ignored.
 * Lots of tiles are available on the floor, per default there are 9000.
-* You can enable _literal mode_ with `-Dliteral=true`, which preinitializes all floor tiles with their their index. This allows you to `copyfrom 23` to get _23_ into your hands, as long as you haven't put anything on tile 23.
+* You can enable _literal mode_ with `-Dliteral=true`, which preinitializes all floor tiles with their their index. This allows you to `COPYFROM 23` to get _23_ into your hands, as long as you haven't put anything on tile 23.
 * The instruction `DUMP` will print debugging information.
 
 ### Details

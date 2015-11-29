@@ -31,6 +31,18 @@ class InterpreterSpec extends AbstractHRMSpec
         0 * _
     }
     
+    def 'comments are ignored'() {
+        given:
+        input = 'COMMENT 1'
+        
+        when:
+        walker.interpret(parse())
+        
+        then:
+        // no invocations at all
+        0 * _
+    }
+    
     def 'I/O works (#value)'(value) {
         given:
         input = '''\
