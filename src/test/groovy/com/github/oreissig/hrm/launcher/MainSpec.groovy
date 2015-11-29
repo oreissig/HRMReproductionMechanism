@@ -32,10 +32,10 @@ class MainSpec extends Specification {
         given:
         def src = dir.newFile()
         src << '''\
-               inbox
-               copyto 1
-               bump+ 1
-               outbox'''
+               INBOX
+               COPYTO 1
+               BUMPUP 1
+               OUTBOX'''
         
         when:
         Main.main(src.absolutePath)

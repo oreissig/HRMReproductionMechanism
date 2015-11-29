@@ -34,8 +34,8 @@ class InterpreterSpec extends AbstractHRMSpec
     def 'I/O works (#value)'(value) {
         given:
         input = '''\
-                inbox
-                outbox
+                INBOX
+                OUTBOX
                 '''.stripIndent()
         
         when:
@@ -52,7 +52,7 @@ class InterpreterSpec extends AbstractHRMSpec
     
     def 'inbox end is signaled'(value) {
         given:
-        input = 'inbox'
+        input = 'INBOX'
         
         when:
         walker.interpret(parse())
@@ -69,9 +69,9 @@ class InterpreterSpec extends AbstractHRMSpec
     def 'outbox clears the hand value'() {
         given:
         input = '''\
-                inbox
-                outbox
-                outbox
+                INBOX
+                OUTBOX
+                OUTBOX
                 '''.stripIndent()
         
         when:
@@ -87,12 +87,12 @@ class InterpreterSpec extends AbstractHRMSpec
         given:
         // swap two inputs
         input = """\
-                inbox
-                copyto $value
-                inbox
-                outbox
-                copyfrom $value
-                outbox
+                INBOX
+                COPYTO $value
+                INBOX
+                OUTBOX
+                COPYFROM $value
+                OUTBOX
                 """.stripIndent()
         
         when:
@@ -115,11 +115,11 @@ class InterpreterSpec extends AbstractHRMSpec
     def 'add works (#a + #b = #sum)'(a, b, sum) {
         given:
         input = '''\
-                inbox
-                copyto 1
-                inbox
-                add 1
-                outbox
+                INBOX
+                COPYTO 1
+                INBOX
+                ADD 1
+                OUTBOX
                 '''.stripIndent()
         
         when:
@@ -145,11 +145,11 @@ class InterpreterSpec extends AbstractHRMSpec
     def 'sub works (#a - #b = #diff)'(a, b, diff) {
         given:
         input = '''\
-                inbox
-                copyto 1
-                inbox
-                sub 1
-                outbox
+                INBOX
+                COPYTO 1
+                INBOX
+                SUB 1
+                OUTBOX
                 '''.stripIndent()
         
         when:
@@ -175,10 +175,10 @@ class InterpreterSpec extends AbstractHRMSpec
     def '#bump works (#bump(#value) = #result)'(bump, value, result) {
         given:
         input = """\
-                inbox
-                copyto 1
+                INBOX
+                COPYTO 1
                 $bump 1
-                outbox
+                OUTBOX
                 """.stripIndent()
         
         when:
@@ -189,19 +189,19 @@ class InterpreterSpec extends AbstractHRMSpec
         1 * o.println(result.toString())
         
         where:
-        bump    | value | result
-        'bump+' | 10    | 11
-        'bump-' | 10    | 9
+        bump     | value | result
+        'BUMPUP' | 10    | 11
+        'BUMPDN' | 10    | 9
     }
     
     def 'jump works'() {
         given:
         input = """\
-                inbox
-                jump foo
-                inbox
+                INBOX
+                JUMP foo
+                INBOX
                 foo:
-                outbox
+                OUTBOX
                 """.stripIndent()
         
         when:
@@ -214,7 +214,7 @@ class InterpreterSpec extends AbstractHRMSpec
     
     def 'jump throws exception for unknown label'() {
         given:
-        input = 'jump foo'
+        input = 'JUMP foo'
         
         when:
         walker.interpret(parse())
@@ -226,12 +226,12 @@ class InterpreterSpec extends AbstractHRMSpec
     def 'jump if zero works (#value)'(value, result) {
         given:
         input = """\
-                inbox
-                jump if zero foo
-                inbox
+                INBOX
+                JUMPZ foo
+                INBOX
                 foo:
-                inbox
-                outbox
+                INBOX
+                OUTBOX
                 """.stripIndent()
         
         when:
@@ -251,12 +251,12 @@ class InterpreterSpec extends AbstractHRMSpec
     def 'jump if negative works (#value)'(value, result) {
         given:
         input = """\
-                inbox
-                jump if negative foo
-                inbox
+                INBOX
+                JUMPN foo
+                INBOX
                 foo:
-                inbox
-                outbox
+                INBOX
+                OUTBOX
                 """.stripIndent()
         
         when:
@@ -288,20 +288,20 @@ class InterpreterSpec extends AbstractHRMSpec
         ex.stackTrace[0].lineNumber == 1
         
         where:
-        name               | src
-        'outbox'           | 'outbox'
-        'copyto'           | 'copyto 1'
-        'add'              | 'add 1'
-        'sub'              | 'sub 1'
-        'jump if zero'     | 'jump if zero foo'
-        'jump if negative' | 'jump if negative foo'
+        name     | src
+        'OUTBOX' | 'OUTBOX'
+        'COPYTO' | 'COPYTO 1'
+        'ADD'    | 'ADD 1'
+        'SUB'    | 'SUB 1'
+        'JUMPN'  | 'JUMPN foo'
+        'JUMPN'  | 'JUMPN foo'
     }
     
     def 'empty tile throws exception for "#name"'(name, src) {
         given:
         i.readLine() >> '0'
         input = """\
-                inbox
+                INBOX
                 $src
                 """.stripIndent()
         
@@ -316,21 +316,21 @@ class InterpreterSpec extends AbstractHRMSpec
         ex.stackTrace[0].lineNumber == 2
         
         where:
-        name               | src
-        'copyfrom'         | 'copyfrom 1'
-        'add'              | 'add 1'
-        'sub'              | 'sub 1'
-        'bump+'            | 'bump+ 1'
-        'bump-'            | 'bump- 1'
+        name       | src
+        'COPYFROM' | 'COPYFROM 1'
+        'ADD'      | 'ADD 1'
+        'SUB'      | 'SUB 1'
+        'BUMPUP'   | 'BUMPUP 1'
+        'BUMPDN'   | 'BUMPDN 1'
     }
     
     def 'literal mode initializes tiles with their index'() {
         given:
         InterpreterListener.LITERAL_MODE = true
         input = '''\
-                copyfrom 42
-                sub 23
-                outbox
+                COPYFROM 42
+                SUB 23
+                OUTBOX
                 '''.stripIndent()
         
         when:
@@ -343,14 +343,14 @@ class InterpreterSpec extends AbstractHRMSpec
         InterpreterListener.LITERAL_MODE = false
     }
     
-    def 'debug info can be printed with #operation'(operation) {
+    def 'debug info can be printed with DUMP'() {
         given:
         input = """\
-                inbox
-                copyto 1
-                copyto 5
-                bump+ 5
-                $operation
+                INBOX
+                COPYTO 1
+                COPYTO 5
+                BUMPUP 5
+                DUMP
                 """.stripIndent()
         
         when:
@@ -362,8 +362,5 @@ class InterpreterSpec extends AbstractHRMSpec
         1 * o.println('FLOOR TILE 1: 23')
         1 * o.println('FLOOR TILE 5: 24')
         0 * o.println(_) // no output for empty tiles
-        
-        where:
-        operation << ['dump', 'DUMP']
     }
 }

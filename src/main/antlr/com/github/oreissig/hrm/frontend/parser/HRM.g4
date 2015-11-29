@@ -14,28 +14,28 @@ expression : inbox
            | copyto
            | add
            | sub
-           | increment
-           | decrement
+           | bumpup
+           | bumpdown
            | label
            | jump
-           | jumpzero
-           | jumpneg
+           | jumpz
+           | jumpn
            | dump
            ;
 
-inbox     : 'inbox'|'INBOX';
-outbox    : 'outbox'|'OUTBOX';
-copyfrom  : ('copyfrom'|'COPYFROM') NUMBER;
-copyto    : ('copyto'|'COPYTO') NUMBER;
-add       : ('add'|'ADD') NUMBER;
-sub       : ('sub'|'SUB') NUMBER;
-increment : ('bump+'|'BUMPUP') NUMBER;
-decrement : ('bump-'|'BUMPDN') NUMBER;
-label     : ID ':';
-jump      : ('jump'|'JUMP') ID;
-jumpzero  : ('jump' 'if' 'zero'|'JUMPZ') ID;
-jumpneg   : ('jump' 'if' 'negative'|'JUMPN') ID;
-dump      : 'dump'|'DUMP';
+inbox    : 'INBOX';
+outbox   : 'OUTBOX';
+copyfrom : 'COPYFROM' NUMBER;
+copyto   : 'COPYTO' NUMBER;
+add      : 'ADD' NUMBER;
+sub      : 'SUB' NUMBER;
+bumpup   : 'BUMPUP' NUMBER;
+bumpdown : 'BUMPDN' NUMBER;
+label    : ID ':';
+jump     : 'JUMP' ID;
+jumpz    : 'JUMPZ' ID;
+jumpn    : 'JUMPN' ID;
+dump     : 'DUMP';
 
 ID      : [a-z]+ ;
 NUMBER  : [0-9]+ ;

@@ -7,15 +7,15 @@ import org.antlr.v4.runtime.tree.TerminalNode
 
 import com.github.oreissig.hrm.frontend.parser.HRMBaseListener
 import com.github.oreissig.hrm.frontend.parser.HRMParser.AddContext
+import com.github.oreissig.hrm.frontend.parser.HRMParser.BumpdownContext
+import com.github.oreissig.hrm.frontend.parser.HRMParser.BumpupContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.CopyfromContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.CopytoContext
-import com.github.oreissig.hrm.frontend.parser.HRMParser.DecrementContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.DumpContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.InboxContext
-import com.github.oreissig.hrm.frontend.parser.HRMParser.IncrementContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.JumpContext
-import com.github.oreissig.hrm.frontend.parser.HRMParser.JumpnegContext
-import com.github.oreissig.hrm.frontend.parser.HRMParser.JumpzeroContext
+import com.github.oreissig.hrm.frontend.parser.HRMParser.JumpnContext
+import com.github.oreissig.hrm.frontend.parser.HRMParser.JumpzContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.OutboxContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.SubContext
 
@@ -79,7 +79,7 @@ class InterpreterListener extends HRMBaseListener {
     }
     
     @Override
-    void enterIncrement(IncrementContext ctx) {
+    void enterBumpup(BumpupContext ctx) {
         def pointer = parse(ctx.NUMBER())
         checkEmptyTile(ctx, pointer)
         def value = floor[pointer]
@@ -89,7 +89,7 @@ class InterpreterListener extends HRMBaseListener {
     }
     
     @Override
-    void enterDecrement(DecrementContext ctx) {
+    void enterBumpdown(BumpdownContext ctx) {
         def pointer = parse(ctx.NUMBER())
         checkEmptyTile(ctx, pointer)
         def value = floor[pointer]
@@ -104,7 +104,7 @@ class InterpreterListener extends HRMBaseListener {
     }
     
     @Override
-    void enterJumpneg(JumpnegContext ctx) throws Jump {
+    void enterJumpn(JumpnContext ctx) throws Jump {
         checkEmptyHands(ctx)
         if (hands < 0) {
             jump(ctx.ID())
@@ -112,7 +112,7 @@ class InterpreterListener extends HRMBaseListener {
     }
     
     @Override
-    void enterJumpzero(JumpzeroContext ctx) throws Jump {
+    void enterJumpz(JumpzContext ctx) throws Jump {
         checkEmptyHands(ctx)
         if (hands == 0) {
             jump(ctx.ID())

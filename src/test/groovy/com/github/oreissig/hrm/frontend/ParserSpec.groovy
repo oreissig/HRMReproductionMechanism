@@ -4,15 +4,14 @@ import spock.lang.Unroll
 
 import com.github.oreissig.hrm.AbstractHRMSpec
 import com.github.oreissig.hrm.frontend.parser.HRMParser.AddContext
+import com.github.oreissig.hrm.frontend.parser.HRMParser.BumpdownContext
+import com.github.oreissig.hrm.frontend.parser.HRMParser.BumpupContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.CopyfromContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.CopytoContext
-import com.github.oreissig.hrm.frontend.parser.HRMParser.DecrementContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.InboxContext
-import com.github.oreissig.hrm.frontend.parser.HRMParser.IncrementContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.JumpContext
-import com.github.oreissig.hrm.frontend.parser.HRMParser.JumpnegContext
-import com.github.oreissig.hrm.frontend.parser.HRMParser.JumpzeroContext
-import com.github.oreissig.hrm.frontend.parser.HRMParser.LabelContext
+import com.github.oreissig.hrm.frontend.parser.HRMParser.JumpnContext
+import com.github.oreissig.hrm.frontend.parser.HRMParser.JumpzContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.OutboxContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.SubContext
 
@@ -46,9 +45,8 @@ class ParserSpec extends AbstractHRMSpec
         
         where:
         style              | src
-        'human'            | '... foo barbarbar'
-        'assembly'         | 'COMMENT 1'
-        'assembly comment' | '-- foo bazbazbaz'
+        'code'   | 'COMMENT 1'
+        'header' | '-- foo bazbazbaz'
     }
     
     def 'blobs are ignored'()
@@ -68,7 +66,7 @@ class ParserSpec extends AbstractHRMSpec
         tree.statement().empty
     }
     
-    def 'human-readable #name statements parse successfully'(name, src, type, check)
+    def '#name statements parse successfully'(name, src, type, check)
     {
         given:
         input = src
@@ -87,63 +85,29 @@ class ParserSpec extends AbstractHRMSpec
         check(exprType) || true // ignore return value, check happens inside closure
         
         where:
-        name        | src                    | type             | check
-        'inbox'     | 'inbox'                | InboxContext     | { /* nothing to do here */ }
-        'outbox'    | 'outbox'               | OutboxContext    | { /* nothing to do here */ }
-        'copyfrom'  | 'copyfrom 123'         | CopyfromContext  | { assert it.NUMBER().text == '123' }
-        'copyto'    | 'copyto 123'           | CopytoContext    | { assert it.NUMBER().text == '123' }
-        'add'       | 'add 123'              | AddContext       | { assert it.NUMBER().text == '123' }
-        'sub'       | 'sub 123'              | SubContext       | { assert it.NUMBER().text == '123' }
-        'increment' | 'bump+ 123'            | IncrementContext | { assert it.NUMBER().text == '123' }
-        'decrement' | 'bump- 123'            | DecrementContext | { assert it.NUMBER().text == '123' }
-        'label'     | 'thelabel:'            | LabelContext     | { assert it.ID().text == 'thelabel' }
-        'jump'      | 'jump foo'             | JumpContext      | { assert it.ID().text == 'foo' }
-        'jumpzero'  | 'jump if zero foo'     | JumpzeroContext  | { assert it.ID().text == 'foo' }
-        'jumpneg'   | 'jump if negative foo' | JumpnegContext   | { assert it.ID().text == 'foo' }
-    }
-    
-    def 'assembly #name statements parse successfully'(name, src, type, check)
-    {
-        given:
-        input = src
-        
-        when:
-        def tree = parse()
-        
-        then:
-        checkErrorFree(tree)
-        tree.statement().size() == 1
-        def statement = tree.statement().first()
-        def expression = statement.expression()
-        def exprType = expression."$name"()
-        exprType
-        exprType.class == type
-        check(exprType) || true // ignore return value, check happens inside closure
-        
-        where:
-        name        | src            | type             | check
-        'inbox'     | 'INBOX'        | InboxContext     | { /* nothing to do here */ }
-        'outbox'    | 'OUTBOX'       | OutboxContext    | { /* nothing to do here */ }
-        'copyfrom'  | 'COPYFROM 123' | CopyfromContext  | { assert it.NUMBER().text == '123' }
-        'copyto'    | 'COPYTO [123]' | CopytoContext    | { assert it.NUMBER().text == '123' }
-        'add'       | 'ADD 123'      | AddContext       | { assert it.NUMBER().text == '123' }
-        'sub'       | 'SUB [123]'    | SubContext       | { assert it.NUMBER().text == '123' }
-        'increment' | 'BUMPUP 123'   | IncrementContext | { assert it.NUMBER().text == '123' }
-        'decrement' | 'BUMPDN [123]' | DecrementContext | { assert it.NUMBER().text == '123' }
+        name       | src            | type            | check
+        'inbox'    | 'INBOX'        | InboxContext    | { /* nothing to do here */ }
+        'outbox'   | 'OUTBOX'       | OutboxContext   | { /* nothing to do here */ }
+        'copyfrom' | 'COPYFROM 123' | CopyfromContext | { assert it.NUMBER().text == '123' }
+        'copyto'   | 'COPYTO 123'   | CopytoContext   | { assert it.NUMBER().text == '123' }
+        'add'      | 'ADD 123'      | AddContext      | { assert it.NUMBER().text == '123' }
+        'sub'      | 'SUB 123'      | SubContext      | { assert it.NUMBER().text == '123' }
+        'bumpup'   | 'BUMPUP 123'   | BumpupContext   | { assert it.NUMBER().text == '123' }
+        'bumpdown' | 'BUMPDN 123'   | BumpdownContext | { assert it.NUMBER().text == '123' }
         // label is the same as the human-readable one
-        'jump'      | 'JUMP foo'     | JumpContext      | { assert it.ID().text == 'foo' }
-        'jumpzero'  | 'JUMPZ foo'    | JumpzeroContext  | { assert it.ID().text == 'foo' }
-        'jumpneg'   | 'JUMPN foo'    | JumpnegContext   | { assert it.ID().text == 'foo' }
+        'jump'     | 'JUMP foo'     | JumpContext     | { assert it.ID().text == 'foo' }
+        'jumpz'    | 'JUMPZ foo'    | JumpzContext    | { assert it.ID().text == 'foo' }
+        'jumpn'    | 'JUMPN foo'    | JumpnContext    | { assert it.ID().text == 'foo' }
     }
 
     def 'multiple statements are parsed successfully'()
     {
         given:
         input = '''\
-        inbox
+        INBOX
         
         ... barbarbarbarbar
-        copyfrom 123
+        COPYFROM 123
         '''.stripIndent()
         
         when:
@@ -157,7 +121,7 @@ class ParserSpec extends AbstractHRMSpec
     def 'trailing new-line is optional'()
     {
         given:
-        input = 'inbox'
+        input = 'INBOX'
         
         when:
         def tree = parse()
