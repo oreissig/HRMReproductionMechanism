@@ -26,12 +26,12 @@ expression : inbox
 
 inbox    : 'INBOX';
 outbox   : 'OUTBOX';
-copyfrom : 'COPYFROM' NUMBER;
-copyto   : 'COPYTO' NUMBER;
-add      : 'ADD' NUMBER;
-sub      : 'SUB' NUMBER;
-bumpup   : 'BUMPUP' NUMBER;
-bumpdown : 'BUMPDN' NUMBER;
+copyfrom : 'COPYFROM' address;
+copyto   : 'COPYTO' address;
+add      : 'ADD' address;
+sub      : 'SUB' address;
+bumpup   : 'BUMPUP' address;
+bumpdown : 'BUMPDN' address;
 label    : ID ':';
 jump     : 'JUMP' ID;
 jumpz    : 'JUMPZ' ID;
@@ -39,9 +39,13 @@ jumpn    : 'JUMPN' ID;
 dump     : 'DUMP';
 comment  : 'COMMENT' NUMBER;
 
+address      : directAddr | indirectAddr;
+directAddr   : NUMBER;
+indirectAddr : '[' NUMBER ']';
+
 ID      : [a-z]+ ;
 NUMBER  : [0-9]+ ;
 // skip spaces, tabs, newlines, brackets (used by asm)
-WS      : [ \t\r\n\[\]]+ -> skip;
+WS      : [ \t\r\n]+ -> skip;
 Comment : '--' ~('\n')* -> skip;
 Blob    : 'DEFINE ' .*? ';' -> skip;

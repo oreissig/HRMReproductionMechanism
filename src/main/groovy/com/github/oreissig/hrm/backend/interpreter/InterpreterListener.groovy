@@ -7,6 +7,7 @@ import org.antlr.v4.runtime.tree.TerminalNode
 
 import com.github.oreissig.hrm.frontend.parser.HRMBaseListener
 import com.github.oreissig.hrm.frontend.parser.HRMParser.AddContext
+import com.github.oreissig.hrm.frontend.parser.HRMParser.AddressContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.BumpdownContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.BumpupContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.CopyfromContext
@@ -50,7 +51,7 @@ class InterpreterListener extends HRMBaseListener {
     
     @Override
     void enterCopyfrom(CopyfromContext ctx) {
-        def pointer = parse(ctx.NUMBER())
+        def pointer = resolve(ctx.address())
         checkEmptyTile(ctx, pointer)
         hands = floor[pointer]
     }
@@ -58,14 +59,14 @@ class InterpreterListener extends HRMBaseListener {
     @Override
     void enterCopyto(CopytoContext ctx) {
         checkEmptyHands(ctx)
-        def pointer = parse(ctx.NUMBER())
+        def pointer = resolve(ctx.address())
         floor[pointer] = hands
     }
     
     @Override
     void enterAdd(AddContext ctx) {
         checkEmptyHands(ctx)
-        def pointer = parse(ctx.NUMBER())
+        def pointer = resolve(ctx.address())
         checkEmptyTile(ctx, pointer)
         hands += floor[pointer]
     }
@@ -73,14 +74,14 @@ class InterpreterListener extends HRMBaseListener {
     @Override
     void enterSub(SubContext ctx) {
         checkEmptyHands(ctx)
-        def pointer = parse(ctx.NUMBER())
+        def pointer = resolve(ctx.address())
         checkEmptyTile(ctx, pointer)
         hands -= floor[pointer]
     }
     
     @Override
     void enterBumpup(BumpupContext ctx) {
-        def pointer = parse(ctx.NUMBER())
+        def pointer = resolve(ctx.address())
         checkEmptyTile(ctx, pointer)
         def value = floor[pointer]
         value++
@@ -90,7 +91,7 @@ class InterpreterListener extends HRMBaseListener {
     
     @Override
     void enterBumpdown(BumpdownContext ctx) {
-        def pointer = parse(ctx.NUMBER())
+        def pointer = resolve(ctx.address())
         checkEmptyTile(ctx, pointer)
         def value = floor[pointer]
         value--
@@ -127,6 +128,18 @@ class InterpreterListener extends HRMBaseListener {
                 output.println "FLOOR TILE $i: $value"
             }
         }
+    }
+    
+    private int resolve(AddressContext addr) throws EmptyTileException {
+        def p
+        if (addr.directAddr()) {
+            p = parse(addr.directAddr().NUMBER())
+        } else {
+            def addrTile = parse(addr.indirectAddr().NUMBER())
+            checkEmptyTile(addr.parent, addrTile)
+            p = floor[addrTile]
+        }
+        return p
     }
     
     private int parse(TerminalNode node) {

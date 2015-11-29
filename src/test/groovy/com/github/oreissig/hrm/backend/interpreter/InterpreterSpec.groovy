@@ -1,9 +1,11 @@
 package com.github.oreissig.hrm.backend.interpreter
 
+import spock.lang.Stepwise
 import spock.lang.Unroll
 
 import com.github.oreissig.hrm.AbstractHRMSpec
 
+@Stepwise
 @Unroll
 class InterpreterSpec extends AbstractHRMSpec
 {
@@ -124,6 +126,38 @@ class InterpreterSpec extends AbstractHRMSpec
         value << [10, InterpreterListener.MAX_TILE-1, 0]
     }
     
+    def 'copy from/to support indirect addressing (#addr)'(addr,value) {
+        given:
+        // select 1 or 2 based on 3
+        input = '''\
+                INBOX
+                COPYTO 1
+                INBOX
+                COPYTO [1]
+                INBOX
+                COPYTO 3
+                COPYFROM [3]
+                OUTBOX
+                '''.stripIndent()
+        
+        when:
+        walker.interpret(parse())
+        
+        then:
+        with(i) {
+            1 * readLine() >> '2'
+            1 * readLine() >> '1'
+            1 * readLine() >> addr
+        }
+        then:
+        1 * o.println(value)
+        
+        where:
+        addr | value
+        1    | '2'
+        2    | '1'
+    }
+    
     def 'add works (#a + #b = #sum)'(a, b, sum) {
         given:
         input = '''\
@@ -184,6 +218,33 @@ class InterpreterSpec extends AbstractHRMSpec
         0   | 0   | 0
     }
     
+    def '#addOp supports indirect addressing'(addOp,sum) {
+        given:
+        input = """\
+                INBOX
+                COPYTO 1
+                INBOX
+                COPYTO 2
+                ${addOp.toUpperCase()} [1]
+                OUTBOX
+                """.stripIndent()
+        
+        when:
+        walker.interpret(parse())
+        
+        then:
+        with(i) {
+            1 * readLine() >> 2
+            1 * readLine() >> 1
+        }
+        1 * o.println(sum)
+        
+        where:
+        addOp | sum
+        'add' | '2'
+        'sub' | '0'
+    }
+    
     def '#bump works (#bump(#value) = #result)'(bump, value, result) {
         given:
         input = """\
@@ -204,6 +265,38 @@ class InterpreterSpec extends AbstractHRMSpec
         bump     | value | result
         'BUMPUP' | 10    | 11
         'BUMPDN' | 10    | 9
+    }
+    
+    def '#bump supports indirect addressing'(bump,result) {
+        given:
+        // bump 1 or 2 based on 3
+        input = """\
+                INBOX
+                COPYTO 1
+                INBOX
+                COPYTO 2
+                INBOX
+                COPYTO 3
+                $bump [3]
+                OUTBOX
+                """.stripIndent()
+        
+        when:
+        walker.interpret(parse())
+        
+        then:
+        with(i) {
+            1 * readLine() >> 1
+            1 * readLine() >> 2
+            1 * readLine() >> 2
+        }
+        then:
+        1 * o.println(result)
+        
+        where:
+        bump     | result
+        'BUMPUP' | '3'
+        'BUMPDN' | '1'
     }
     
     def 'jump works'() {
