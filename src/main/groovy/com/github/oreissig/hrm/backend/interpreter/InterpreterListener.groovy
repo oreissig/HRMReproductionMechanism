@@ -1,6 +1,5 @@
 package com.github.oreissig.hrm.backend.interpreter
 
-import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 
 import org.antlr.v4.runtime.ParserRuleContext
@@ -133,10 +132,8 @@ class InterpreterListener extends HRMBaseListener {
         }
     }
     
-    // somehow type check fails on TravisCI
-    @CompileDynamic
     private int resolve(AddressContext addr) throws EmptyTileException {
-        def p
+        int p
         if (addr.directAddr()) {
             p = parse(addr.directAddr().NUMBER())
         } else {
@@ -144,6 +141,8 @@ class InterpreterListener extends HRMBaseListener {
             checkEmptyTile(addr.parent, addrTile)
             p = floor[addrTile]
         }
+        if (p < 0 || p >= MAX_TILE)
+            throw new BadTileAddressException(addr, p)
         return p
     }
     

@@ -1,6 +1,7 @@
 package com.github.oreissig.hrm.backend.interpreter
 
 import static com.github.oreissig.hrm.backend.interpreter.InterpreterListener.LITERAL_MODE
+import static com.github.oreissig.hrm.backend.interpreter.InterpreterListener.MAX_TILE
 import static com.github.oreissig.hrm.backend.interpreter.InterpreterListener.MAX_VALUE
 import static com.github.oreissig.hrm.backend.interpreter.InterpreterListener.MIN_VALUE
 import spock.lang.Stepwise
@@ -126,7 +127,7 @@ class InterpreterSpec extends AbstractHRMSpec
         1 * o.println('123')
         
         where:
-        value << [10, InterpreterListener.MAX_TILE-1, 0]
+        value << [10, MAX_TILE-1, 0]
     }
     
     def 'copy from/to support indirect addressing (#addr)'(addr,value) {
@@ -159,6 +160,38 @@ class InterpreterSpec extends AbstractHRMSpec
         addr | value
         1    | '2'
         2    | '1'
+    }
+    
+    def 'address overflow throws an exception'() {
+        given:
+        def addr = MAX_TILE
+        input = "COPYFROM $addr"
+        
+        when:
+        walker.interpret(parse())
+        
+        then:
+        BadTileAddressException ex = thrown()
+        ex.badAddress == addr
+    }
+    
+    def 'address underflow throws an exception'() {
+        given:
+        def addr = -1
+        // workaround because direct addressing doesn't parse negative numbers
+        input = '''\
+                INBOX
+                COPYTO 1
+                COPYFROM [1]
+                '''.stripIndent()
+        1 * i.readLine() >> addr
+        
+        when:
+        walker.interpret(parse())
+        
+        then:
+        BadTileAddressException ex = thrown()
+        ex.badAddress == addr
     }
     
     def 'add works (#a + #b = #sum)'(a, b, sum) {
@@ -248,7 +281,7 @@ class InterpreterSpec extends AbstractHRMSpec
         'sub' | '0'
     }
     
-    def 'arithmetic #whatflow is detected'(whatflow,initial,operation) {
+    def 'arithmetic #whatflow throws an exception'(whatflow,initial,operation) {
         given:
         input = """INBOX
                    COPYTO 1
@@ -326,7 +359,7 @@ class InterpreterSpec extends AbstractHRMSpec
         'BUMPDN' | '1'
     }
     
-    def 'bump #whatflow is detected'(whatflow,initial,operation) {
+    def 'bump #whatflow throws an exception'(whatflow,initial,operation) {
         given:
         input = """INBOX
                    COPYTO 1
