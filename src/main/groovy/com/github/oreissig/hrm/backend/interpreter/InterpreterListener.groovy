@@ -27,6 +27,8 @@ class InterpreterListener extends HRMBaseListener {
     static BufferedReader input = System.'in'.newReader()
     static int MAX_TILE = 9001
     static boolean LITERAL_MODE = System.properties['literal'].asBoolean()
+    static int MAX_VALUE = 999
+    static int MIN_VALUE = -999
     
     final Integer[] floor = new Integer[MAX_TILE]
     Integer hands = null
@@ -40,21 +42,21 @@ class InterpreterListener extends HRMBaseListener {
         def raw = input.readLine()
         if (raw == null || raw.empty)
             throw new EmptyInboxException(ctx)
-        hands = raw as int
+        setHands(raw as int, ctx)
     }
     
     @Override
     void enterOutbox(OutboxContext ctx) {
         checkEmptyHands(ctx)
         output.println(hands as String)
-        hands = null
+        setHands(null, ctx)
     }
     
     @Override
     void enterCopyfrom(CopyfromContext ctx) {
         def pointer = resolve(ctx.address())
         checkEmptyTile(ctx, pointer)
-        hands = floor[pointer]
+        setHands(floor[pointer], ctx)
     }
     
     @Override
@@ -69,7 +71,7 @@ class InterpreterListener extends HRMBaseListener {
         checkEmptyHands(ctx)
         def pointer = resolve(ctx.address())
         checkEmptyTile(ctx, pointer)
-        hands += floor[pointer]
+        setHands(hands + floor[pointer], ctx)
     }
     
     @Override
@@ -77,7 +79,7 @@ class InterpreterListener extends HRMBaseListener {
         checkEmptyHands(ctx)
         def pointer = resolve(ctx.address())
         checkEmptyTile(ctx, pointer)
-        hands -= floor[pointer]
+        setHands(hands - floor[pointer], ctx)
     }
     
     @Override
@@ -87,7 +89,7 @@ class InterpreterListener extends HRMBaseListener {
         def value = floor[pointer]
         value++
         floor[pointer] = value
-        hands = value
+        setHands(value, ctx)
     }
     
     @Override
@@ -97,7 +99,7 @@ class InterpreterListener extends HRMBaseListener {
         def value = floor[pointer]
         value--
         floor[pointer] = value
-        hands = value
+        setHands(value, ctx)
     }
     
     @Override
@@ -167,5 +169,12 @@ class InterpreterListener extends HRMBaseListener {
             else
                 throw new EmptyTileException(ctx)
         }
+    }
+    
+    void setHands(Integer newValue, ParserRuleContext ctx = null) {
+        if (newValue != null && (newValue > MAX_VALUE || newValue < MIN_VALUE))
+            throw new OverflowException(ctx, newValue)
+        else
+            hands = newValue
     }
 }

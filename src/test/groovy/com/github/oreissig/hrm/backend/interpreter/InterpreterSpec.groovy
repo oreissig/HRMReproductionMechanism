@@ -1,5 +1,8 @@
 package com.github.oreissig.hrm.backend.interpreter
 
+import static com.github.oreissig.hrm.backend.interpreter.InterpreterListener.LITERAL_MODE
+import static com.github.oreissig.hrm.backend.interpreter.InterpreterListener.MAX_VALUE
+import static com.github.oreissig.hrm.backend.interpreter.InterpreterListener.MIN_VALUE
 import spock.lang.Stepwise
 import spock.lang.Unroll
 
@@ -61,7 +64,7 @@ class InterpreterSpec extends AbstractHRMSpec
         1 * o.println(value)
         
         where:
-        value << [23, -42, 0, Integer.MAX_VALUE, Integer.MIN_VALUE]*.toString()
+        value << [23, -42, 0, MAX_VALUE, MIN_VALUE]*.toString()
     }
     
     def 'inbox end is signaled'(value) {
@@ -245,6 +248,30 @@ class InterpreterSpec extends AbstractHRMSpec
         'sub' | '0'
     }
     
+    def 'arithmetic #whatflow is detected'(whatflow,initial,operation) {
+        given:
+        input = """INBOX
+                   COPYTO 1
+                   INBOX
+                   COPYTO 2
+                   $operation 1"""
+        1 * i.readLine() >> 1
+        1 * i.readLine() >> initial
+        
+        when:
+        walker.interpret(parse())
+        
+        then:
+        OverflowException ex = thrown()
+        ex.message.endsWith 'That should be enough for anybody.'
+        ex.illegalValue == initial + Integer.signum(initial) // add one to magnitude
+        
+        where:
+        whatflow    | initial   | operation
+        'overflow'  | MAX_VALUE | 'ADD'
+        'underflow' | MIN_VALUE | 'SUB'
+    }
+    
     def '#bump works (#bump(#value) = #result)'(bump, value, result) {
         given:
         input = """\
@@ -297,6 +324,27 @@ class InterpreterSpec extends AbstractHRMSpec
         bump     | result
         'BUMPUP' | '3'
         'BUMPDN' | '1'
+    }
+    
+    def 'bump #whatflow is detected'(whatflow,initial,operation) {
+        given:
+        input = """INBOX
+                   COPYTO 1
+                   $operation 1"""
+        1 * i.readLine() >> initial
+        
+        when:
+        walker.interpret(parse())
+        
+        then:
+        OverflowException ex = thrown()
+        ex.message.endsWith 'That should be enough for anybody.'
+        ex.illegalValue == initial + Integer.signum(initial) // add one to magnitude
+        
+        where:
+        whatflow    | initial   | operation
+        'overflow'  | MAX_VALUE | 'BUMPUP'
+        'underflow' | MIN_VALUE | 'BUMPDN'
     }
     
     def 'jump works'() {
@@ -452,7 +500,7 @@ class InterpreterSpec extends AbstractHRMSpec
     
     def 'literal mode initializes tiles with their index'() {
         given:
-        InterpreterListener.LITERAL_MODE = true
+        LITERAL_MODE = true
         input = '''\
                 COPYFROM 42
                 SUB 23
@@ -466,7 +514,7 @@ class InterpreterSpec extends AbstractHRMSpec
         1 * o.println('19')
         
         cleanup:
-        InterpreterListener.LITERAL_MODE = false
+        LITERAL_MODE = false
     }
     
     def 'debug info can be printed with DUMP'() {
