@@ -2,6 +2,11 @@ apply plugin: 'groovy'
 apply plugin: 'antlr'
 apply plugin: 'application'
 
+// use invokedynamic for groovy because it's so cool
+tasks.withType(GroovyCompile) {
+    groovyOptions.optimizationOptions.indy = true
+}
+
 // configure application
 mainClassName = 'com.github.oreissig.hrm.launcher.Main'
 if (project.hasProperty('args'))
