@@ -45,7 +45,7 @@ indirectAddr : '[' NUMBER ']';
 
 ID      : [a-z]+ ;
 NUMBER  : [0-9]+ ;
-// skip spaces, tabs, newlines, brackets (used by asm)
+// skip spaces, tabs, newlines
 WS      : [ \t\r\n]+ -> skip;
 Comment : '--' ~('\n')* -> skip;
 Blob    : 'DEFINE ' .*? ';' -> skip;
