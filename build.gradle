@@ -1,6 +1,10 @@
+group = 'com.github.oreissig'
+version = '1.0.0-SNAPSHOT'
+
 apply plugin: 'groovy'
 apply plugin: 'antlr'
 apply plugin: 'application'
+apply from: 'bintray-publish.gradle'
 
 // use invokedynamic for groovy because it's so cool
 tasks.withType(GroovyCompile) {
@@ -19,7 +23,7 @@ jacoco.toolVersion = '0.7.6.+'
 tasks.withType(Test) { it.finalizedBy 'jacocoTestReport' }
 
 repositories {
-    mavenCentral()
+    jcenter()
 }
 
 dependencies {

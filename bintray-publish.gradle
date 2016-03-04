@@ -1,0 +1,51 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.6'
+    }
+}
+
+apply plugin: 'maven-publish'
+// somehow "apply plugin: 'com.jfrog.bintray'" doesn't work
+apply plugin: com.jfrog.bintray.gradle.BintrayPlugin
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+    from sourceSets.main.allGroovy
+    tasks.assemble.dependsOn it
+    classifier 'sources'
+}
+
+task groovydocJar(type: Jar) {
+    from groovydoc
+    tasks.assemble.dependsOn it
+    classifier 'javadoc'
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifact sourceJar
+            artifact groovydocJar
+            artifact distZip
+            artifact distTar
+        }
+    }
+}
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    publications = ['maven']
+    pkg {
+        repo = 'maven'
+        name = project.name
+    }
+}
+
+bintrayUpload.onlyIf {
+    !version.endsWith('SNAPSHOT') && (!System.env.TRAVIS || System.env.TRAVIS_JDK_VERSION == 'oraclejdk8')
+}
