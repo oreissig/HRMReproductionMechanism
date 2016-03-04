@@ -37,3 +37,7 @@ dependencies {
     testRuntime 'cglib:cglib:3.2.1'
     testRuntime 'org.objenesis:objenesis:2.2'
 }
+
+tasks.distTar {
+    compression = 'GZIP'
+}
