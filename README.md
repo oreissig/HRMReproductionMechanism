@@ -8,9 +8,13 @@ An implementation of the [Human Resource Machine](http://tomorrowcorporation.com
 
 ### Usage
 
-To interpret a HRM program just run `gradlew run -Pargs=YourSource.hrm`.
+Prerequisites:
+* Java Runtime Environment 1.7 or newer
+* *optional* [Human Resource Machine Soundtrack](http://tomorrowcorporation.com/human-resource-machine-soundtrack) playing in the background
 
-Executing `gradlew build` will generate a stand-alone distribution into `build/distributions`.
+Download the zip (Windows) or tgz (Linux) file from Bintray, extract it and call the start script in the `bin` directory, e. g. `HRMReproductionMechanism YourSource.hrm`.
+
+You can also execute the interpreter directly from source: `gradlew run -Pargs=YourSource.hrm`.
 
 ### Language Guide
 
