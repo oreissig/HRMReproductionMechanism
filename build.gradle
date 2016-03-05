@@ -1,6 +1,3 @@
-group = 'com.github.oreissig'
-version = '1.0.0'
-
 apply plugin: 'groovy'
 apply plugin: 'antlr'
 apply plugin: 'application'
