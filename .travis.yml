@@ -1,10 +1,13 @@
 language: java
 
-jdk:
-  - openjdk7
-  - oraclejdk8
+# needed for jdk9-ea
+sudo: required
+dist: trusty
+group: edge
 
-sudo: false
+jdk:
+  - oraclejdk8
+  - oraclejdk9
 
 after_success:
   - ./gradlew bintrayUpload
