@@ -18,6 +18,11 @@ run.standardInput = System.in
 apply plugin: 'jacoco'
 jacoco.toolVersion = '0.7.7.+'
 tasks.withType(Test) { it.finalizedBy 'jacocoTestReport' }
+jacocoTestReport {
+    reports {
+        xml.enabled true
+    }
+}
 
 repositories {
     jcenter()
