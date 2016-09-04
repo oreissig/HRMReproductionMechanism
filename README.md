@@ -2,6 +2,7 @@
 
 [ ![Download](https://api.bintray.com/packages/oreissig/maven/HRMReproductionMechanism/images/download.svg) ](https://bintray.com/oreissig/maven/HRMReproductionMechanism/_latestVersion)
 [![Build Status](https://travis-ci.org/oreissig/HRMReproductionMechanism.svg)](https://travis-ci.org/oreissig/HRMReproductionMechanism)
+[![codecov](https://codecov.io/gh/oreissig/HRMReproductionMechanism/branch/master/graph/badge.svg)](https://codecov.io/gh/oreissig/HRMReproductionMechanism)
 
 An implementation of the [Human Resource Machine](http://tomorrowcorporation.com/humanresourcemachine) programming language by [Tomorrow Corporation](http://tomorrowcorporation.com).
 
