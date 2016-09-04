@@ -1,11 +1,5 @@
 package com.github.oreissig.hrm.backend.interpreter
 
-import groovy.transform.CompileDynamic
-import groovy.transform.CompileStatic
-
-import org.antlr.v4.runtime.ParserRuleContext
-import org.antlr.v4.runtime.tree.TerminalNode
-
 import com.github.oreissig.hrm.frontend.parser.HRMBaseListener
 import com.github.oreissig.hrm.frontend.parser.HRMParser.AddContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.AddressContext
@@ -20,119 +14,108 @@ import com.github.oreissig.hrm.frontend.parser.HRMParser.JumpnContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.JumpzContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.OutboxContext
 import com.github.oreissig.hrm.frontend.parser.HRMParser.SubContext
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
+import org.antlr.v4.runtime.ParserRuleContext
+import org.antlr.v4.runtime.tree.TerminalNode
 
 @CompileStatic
 class InterpreterListener extends HRMBaseListener {
-    static PrintWriter output = System.out.newPrintWriter()
-    static BufferedReader input = System.'in'.newReader()
     static int MAX_TILE = 9001
-    static boolean LITERAL_MODE = System.properties['literal'].asBoolean()
     static int MAX_VALUE = 999
     static int MIN_VALUE = -999
-    
-    final Integer[] floor = new Integer[MAX_TILE]
-    Integer hands = null
+
+    private final InterpreterContext context
+    private Integer hands = null
     // reuse "Jump" exception
     private final Jump jump = new Jump()
-    
+
+    InterpreterListener(InterpreterContext context) {
+        this.context = context
+    }
+
     @Override
     void enterInbox(InboxContext ctx) {
-        output.print '> '
-        output.flush()
-        def raw = input.readLine()
-        if (raw == null || raw.empty)
+        def input = context.read()
+        if (input == null) {
             throw new EmptyInboxException(ctx)
-        setHands(raw as int, ctx)
+        }
+        setHands(input, ctx)
     }
-    
+
     @Override
     void enterOutbox(OutboxContext ctx) {
-        checkEmptyHands(ctx)
-        output.println(hands as String)
+        context.print(getHands(ctx))
         setHands(null, ctx)
     }
-    
+
     @Override
     void enterCopyfrom(CopyfromContext ctx) {
         def pointer = resolve(ctx.address())
-        checkEmptyTile(ctx, pointer)
-        setHands(floor[pointer], ctx)
+        setHands(getTile(ctx, pointer), ctx)
     }
-    
+
     @Override
     void enterCopyto(CopytoContext ctx) {
-        checkEmptyHands(ctx)
         def pointer = resolve(ctx.address())
-        floor[pointer] = hands
+        context[pointer] = getHands(ctx)
     }
-    
+
     @Override
     void enterAdd(AddContext ctx) {
-        checkEmptyHands(ctx)
         def pointer = resolve(ctx.address())
-        checkEmptyTile(ctx, pointer)
-        setHands(hands + floor[pointer], ctx)
+        setHands(getHands(ctx) + getTile(ctx, pointer), ctx)
     }
-    
+
     @Override
     void enterSub(SubContext ctx) {
-        checkEmptyHands(ctx)
         def pointer = resolve(ctx.address())
-        checkEmptyTile(ctx, pointer)
-        setHands(hands - floor[pointer], ctx)
+        setHands(getHands(ctx) - getTile(ctx, pointer), ctx)
     }
-    
+
     @Override
     void enterBumpup(BumpupContext ctx) {
         def pointer = resolve(ctx.address())
-        checkEmptyTile(ctx, pointer)
-        def value = floor[pointer]
+        def value = getTile(ctx, pointer)
         value++
-        floor[pointer] = value
+        context[pointer] = value
         setHands(value, ctx)
     }
-    
+
     @Override
     void enterBumpdown(BumpdownContext ctx) {
         def pointer = resolve(ctx.address())
-        checkEmptyTile(ctx, pointer)
-        def value = floor[pointer]
+        def value = getTile(ctx, pointer)
         value--
-        floor[pointer] = value
+        context[pointer] = value
         setHands(value, ctx)
     }
-    
+
     @Override
     void enterJump(JumpContext ctx) throws Jump {
         jump(ctx.ID())
     }
-    
+
     @Override
     void enterJumpn(JumpnContext ctx) throws Jump {
-        checkEmptyHands(ctx)
-        if (hands < 0) {
+        if (getHands(ctx) < 0) {
             jump(ctx.ID())
         }
     }
-    
+
     @Override
     void enterJumpz(JumpzContext ctx) throws Jump {
-        checkEmptyHands(ctx)
-        if (hands == 0) {
+        if (getHands(ctx) == 0) {
             jump(ctx.ID())
         }
     }
-    
+
     @Override
     void enterDump(DumpContext ctx) {
-        output.println 'HANDS: ' + (hands ?: 'empty')
-        floor.eachWithIndex { value, i ->
-            if (value) {
-                output.println "FLOOR TILE $i: $value"
-            }
-        }
+        context.print 'HANDS: ' + (hands ?: 'empty')
+        context.dump()
     }
-    
+
     // somehow type check fails on TravisCI
     @CompileDynamic
     private int resolve(AddressContext addr) throws EmptyTileException {
@@ -141,39 +124,37 @@ class InterpreterListener extends HRMBaseListener {
             p = parse(addr.directAddr().NUMBER())
         } else {
             def addrTile = parse(addr.indirectAddr().NUMBER())
-            checkEmptyTile(addr.parent, addrTile)
-            p = floor[addrTile]
+            p = getTile(addr.parent, addrTile)
         }
         if (p < 0 || p >= MAX_TILE)
             throw new BadTileAddressException(addr, p)
         return p
     }
-    
+
     private int parse(TerminalNode node) {
         node.text.toInteger()
     }
-    
+
     private void jump(TerminalNode toLabel) throws Jump {
         // this is nasty, but there's no obvious way of breaking out otherwise
         jump.label = toLabel.text
         throw jump
     }
-    
-    private void checkEmptyHands(ParserRuleContext ctx) throws EmptyHandsException {
+
+    private int getHands(ParserRuleContext ctx) throws EmptyHandsException {
         if (hands == null)
             throw new EmptyHandsException(ctx)
+        return hands
     }
-    
-    private void checkEmptyTile(ParserRuleContext ctx, int pointer) throws EmptyTileException {
-        if (floor[pointer] == null) {
-            if (LITERAL_MODE)
-                floor[pointer] = pointer
-            else
-                throw new EmptyTileException(ctx)
-        }
+
+    private int getTile(ParserRuleContext ctx, int pointer) throws EmptyTileException {
+        def tileValue = context[pointer]
+        if (tileValue == null)
+            throw new EmptyTileException(ctx)
+        return tileValue
     }
-    
-    void setHands(Integer newValue, ParserRuleContext ctx = null) {
+
+    private void setHands(Integer newValue, ParserRuleContext ctx = null) {
         if (newValue != null && (newValue > MAX_VALUE || newValue < MIN_VALUE))
             throw new OverflowException(ctx, newValue)
         else

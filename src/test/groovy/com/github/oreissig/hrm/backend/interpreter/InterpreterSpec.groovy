@@ -1,89 +1,88 @@
 package com.github.oreissig.hrm.backend.interpreter
 
-import static com.github.oreissig.hrm.backend.interpreter.InterpreterListener.LITERAL_MODE
+import com.github.oreissig.hrm.AbstractHRMSpec
+import spock.lang.Unroll
+
 import static com.github.oreissig.hrm.backend.interpreter.InterpreterListener.MAX_TILE
 import static com.github.oreissig.hrm.backend.interpreter.InterpreterListener.MAX_VALUE
 import static com.github.oreissig.hrm.backend.interpreter.InterpreterListener.MIN_VALUE
-import spock.lang.Stepwise
-import spock.lang.Unroll
 
-import com.github.oreissig.hrm.AbstractHRMSpec
-
-@Stepwise
 @Unroll
-class InterpreterSpec extends AbstractHRMSpec
-{
-    static final didJump = '1'
-    static final didNotJump = '2'
-    
+class InterpreterSpec extends AbstractHRMSpec {
     def walker = new InterpreterWalker()
-    BufferedReader i = Mock()
-    PrintWriter o = Mock()
-    
-    def setup() {
-        InterpreterListener.input = i
-        InterpreterListener.output = o
-    }
-    
+    InterpreterContext context = Mock()
+
     def 'empty program interprets successfully'() {
         given:
         input = ''
-        
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
         // no invocations at all
         0 * _
     }
-    
+
     def 'comments are ignored'() {
         given:
         input = 'COMMENT 1'
-        
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
         // no invocations at all
         0 * _
     }
-    
-    def 'I/O works (#value)'(value) {
+
+    def 'input works (#value)'(value) {
+        given:
+        input = '''\
+                INBOX
+                '''.stripIndent()
+
+        when:
+        walker.interpret(parse(), context)
+
+        then:
+        1 * context.read() >> value
+
+        where:
+        value << [23, -42, 0, MAX_VALUE, MIN_VALUE]
+    }
+
+    def 'output works (#value)'(value) {
         given:
         input = '''\
                 INBOX
                 OUTBOX
                 '''.stripIndent()
-        
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
-        1 * o.print('> ')
-        1 * i.readLine() >> value
-        1 * o.println(value)
-        
+        1 * context.read() >> value
+        1 * context.print(value)
+
         where:
-        value << [23, -42, 0, MAX_VALUE, MIN_VALUE]*.toString()
+        value << [23, -42, 0, MAX_VALUE, MIN_VALUE]
     }
-    
-    def 'inbox end is signaled'(value) {
+
+    def 'inbox end is signaled'() {
         given:
         input = 'INBOX'
-        
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
-        1 * i.readLine() >> value
+        1 * context.read() >> null
         EmptyInboxException ex = thrown()
         ex.message == 'The end of the inbox has been reached!'
-        
-        where:
-        value << [null, '']
     }
-    
+
     def 'outbox clears the hand value'() {
         given:
         input = '''\
@@ -91,129 +90,140 @@ class InterpreterSpec extends AbstractHRMSpec
                 OUTBOX
                 OUTBOX
                 '''.stripIndent()
-        
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
         thrown(EmptyHandsException)
-        1 * i.readLine() >> '23'
-        1 * o.println('23')
+        1 * context.read() >> 23
+        1 * context.print(23)
     }
-    
-    def 'copy from/to work (#value)'(value) {
+
+    def 'copyfrom works (#value)'(address) {
         given:
-        // swap two inputs
+        def value = 123
         input = """\
-                INBOX
-                COPYTO $value
-                INBOX
-                OUTBOX
-                COPYFROM $value
+                COPYFROM $address
                 OUTBOX
                 """.stripIndent()
-        
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
-        with(i) {
-            1 * readLine() >> '123'
-            1 * readLine() >> '456'
-        }
-        then:
-        1 * o.println('456')
-        then:
-        1 * o.println('123')
-        
+        1 * context.getAt(address) >> value
+        1 * context.print(value)
+
         where:
-        value << [10, MAX_TILE-1, 0]
+        address << [10, MAX_TILE - 1, 0]
     }
-    
-    def 'copy from/to support indirect addressing (#addr)'(addr,value) {
+
+    def 'copyto works (#value)'(address) {
         given:
-        // select 1 or 2 based on 3
-        input = '''\
+        def value = 123
+        input = """\
                 INBOX
-                COPYTO 1
-                INBOX
-                COPYTO [1]
-                INBOX
-                COPYTO 3
-                COPYFROM [3]
-                OUTBOX
-                '''.stripIndent()
-        
+                COPYTO $address
+                """.stripIndent()
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
-        with(i) {
-            1 * readLine() >> '2'
-            1 * readLine() >> '1'
-            1 * readLine() >> addr
-        }
-        then:
-        1 * o.println(value)
-        
+        1 * context.read() >> value
+        1 * context.putAt(address, value)
+
         where:
-        addr | value
-        1    | '2'
-        2    | '1'
+        address << [10, MAX_TILE - 1, 0]
     }
-    
+
+    def 'copyfrom supports indirect addressing'() {
+        given:
+        def value = 123
+        def pointer = 23
+        def target = 42
+        input = """\
+                COPYFROM [$pointer]
+                OUTBOX
+                """.stripIndent()
+
+        when:
+        walker.interpret(parse(), context)
+
+        then:
+        1 * context.getAt(pointer) >> target
+        1 * context.getAt(target) >> value
+        1 * context.print(value)
+    }
+
+    def 'copyto supports indirect addressing'() {
+        given:
+        def value = 123
+        def pointer = 23
+        def target = 42
+        input = """\
+                INBOX
+                COPYTO [$pointer]
+                """.stripIndent()
+
+        when:
+        walker.interpret(parse(), context)
+
+        then:
+        1 * context.read() >> value
+        1 * context.getAt(pointer) >> target
+        1 * context.putAt(target, value)
+    }
+
     def 'address overflow throws an exception'() {
         given:
         def addr = MAX_TILE
         input = "COPYFROM $addr"
-        
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
         BadTileAddressException ex = thrown()
         ex.badAddress == addr
     }
-    
+
     def 'address underflow throws an exception'() {
         given:
         def addr = -1
         // workaround because direct addressing doesn't parse negative numbers
         input = '''\
-                INBOX
-                COPYTO 1
                 COPYFROM [1]
                 '''.stripIndent()
-        1 * i.readLine() >> addr
-        
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
+        1 * context.getAt(1) >> addr
         BadTileAddressException ex = thrown()
         ex.badAddress == addr
     }
-    
+
     def 'add works (#a + #b = #sum)'(a, b, sum) {
         given:
         input = '''\
                 INBOX
-                COPYTO 1
-                INBOX
                 ADD 1
                 OUTBOX
                 '''.stripIndent()
-        
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
-        with(i) {
-            1 * readLine() >> b
-            1 * readLine() >> a
+        with(context) {
+            1 * read() >> a
+            1 * getAt(1) >> b
+            1 * print(sum)
         }
-        1 * o.println(sum.toString())
-        
+
         where:
         a   | b   | sum
         123 | 543 | 666
@@ -223,27 +233,25 @@ class InterpreterSpec extends AbstractHRMSpec
         0   | 42  | 42
         0   | 0   | 0
     }
-    
+
     def 'sub works (#a - #b = #diff)'(a, b, diff) {
         given:
         input = '''\
                 INBOX
-                COPYTO 1
-                INBOX
                 SUB 1
                 OUTBOX
                 '''.stripIndent()
-        
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
-        with(i) {
-            1 * readLine() >> b
-            1 * readLine() >> a
+        with(context) {
+            1 * read() >> a
+            1 * getAt(1) >> b
+            1 * print(diff)
         }
-        1 * o.println(diff.toString())
-        
+
         where:
         a   | b   | diff
         666 | 543 | 123
@@ -253,133 +261,111 @@ class InterpreterSpec extends AbstractHRMSpec
         0   | 42  | -42
         0   | 0   | 0
     }
-    
-    def '#addOp supports indirect addressing'(addOp,sum) {
+
+    def '#addOp supports indirect addressing'(addOp, sum) {
         given:
         input = """\
                 INBOX
-                COPYTO 1
-                INBOX
-                COPYTO 2
                 ${addOp.toUpperCase()} [1]
                 OUTBOX
                 """.stripIndent()
-        
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
-        with(i) {
-            1 * readLine() >> 2
-            1 * readLine() >> 1
+        with(context) {
+            1 * read() >> 1
+            1 * getAt(1) >> 2
+            1 * getAt(2) >> 1
+            1 * print(sum)
         }
-        1 * o.println(sum)
-        
+
         where:
         addOp | sum
-        'add' | '2'
-        'sub' | '0'
+        'add' | 2
+        'sub' | 0
     }
-    
-    def 'arithmetic #whatflow throws an exception'(whatflow,initial,operation) {
+
+    def 'arithmetic #whatflow throws an exception'(whatflow, initial, operation) {
         given:
-        input = """INBOX
-                   COPYTO 1
-                   INBOX
-                   COPYTO 2
-                   $operation 1"""
-        1 * i.readLine() >> 1
-        1 * i.readLine() >> initial
-        
+        input = """\
+                INBOX
+                $operation 1
+                """.stripIndent()
+        1 * context.read() >> initial
+        1 * context.getAt(1) >> 1
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
         OverflowException ex = thrown()
         ex.message.endsWith 'That should be enough for anybody.'
         ex.illegalValue == initial + Integer.signum(initial) // add one to magnitude
-        
+
         where:
         whatflow    | initial   | operation
         'overflow'  | MAX_VALUE | 'ADD'
         'underflow' | MIN_VALUE | 'SUB'
     }
-    
+
     def '#bump works (#bump(#value) = #result)'(bump, value, result) {
         given:
-        input = """\
-                INBOX
-                COPYTO 1
-                $bump 1
-                OUTBOX
-                """.stripIndent()
-        
+        input = "$bump 1"
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
-        1 * i.readLine() >> value
-        1 * o.println(result.toString())
-        
+        1 * context.getAt(1) >> value
+        1 * context.putAt(1, result)
+
         where:
         bump     | value | result
         'BUMPUP' | 10    | 11
         'BUMPDN' | 10    | 9
     }
-    
-    def '#bump supports indirect addressing'(bump,result) {
+
+    def '#bump supports indirect addressing'(bump, value, result) {
         given:
-        // bump 1 or 2 based on 3
-        input = """\
-                INBOX
-                COPYTO 1
-                INBOX
-                COPYTO 2
-                INBOX
-                COPYTO 3
-                $bump [3]
-                OUTBOX
-                """.stripIndent()
-        
+        input = "$bump [1]"
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
-        with(i) {
-            1 * readLine() >> 1
-            1 * readLine() >> 2
-            1 * readLine() >> 2
+        with(context) {
+            1 * getAt(1) >> 42
+            1 * getAt(42) >> value
+            1 * putAt(42, result)
         }
-        then:
-        1 * o.println(result)
-        
+
         where:
-        bump     | result
-        'BUMPUP' | '3'
-        'BUMPDN' | '1'
+        bump     | value | result
+        'BUMPUP' | 10    | 11
+        'BUMPDN' | 10    | 9
     }
-    
-    def 'bump #whatflow throws an exception'(whatflow,initial,operation) {
+
+    def 'bump #whatflow throws an exception'(whatflow, initial, operation) {
         given:
-        input = """INBOX
-                   COPYTO 1
-                   $operation 1"""
-        1 * i.readLine() >> initial
-        
+        input = "$operation 1"
+        1 * context.getAt(1) >> initial
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
         OverflowException ex = thrown()
         ex.message.endsWith 'That should be enough for anybody.'
         ex.illegalValue == initial + Integer.signum(initial) // add one to magnitude
-        
+
         where:
         whatflow    | initial   | operation
         'overflow'  | MAX_VALUE | 'BUMPUP'
         'underflow' | MIN_VALUE | 'BUMPDN'
     }
-    
+
     def 'jump works'() {
         given:
         input = """\
@@ -389,90 +375,86 @@ class InterpreterSpec extends AbstractHRMSpec
                 foo:
                 OUTBOX
                 """.stripIndent()
-        
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
-        1 * i.readLine() >> '23'
-        1 * o.println('23')
+        1 * context.read() >> 23
+        1 * context.print(23)
     }
-    
+
     def 'jump throws exception for unknown label'() {
         given:
         input = 'JUMP foo'
-        
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
         thrown(UnknownJumpLabelException)
     }
-    
-    def 'jump if zero works (#value)'(value, result) {
+
+    def 'jump if zero works (#value)'(value, jumped) {
         given:
         input = """\
                 INBOX
                 JUMPZ foo
-                INBOX
+                COPYTO 1
                 foo:
-                INBOX
-                OUTBOX
                 """.stripIndent()
-        
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
-        i.readLine() >>> [value, didJump, didNotJump]
-        1 * o.println(result)
-        
+        1 * context.read() >> value
+        (jumped ? 0 : 1) * context.putAt(1, value)
+
         where:
-        value | result
-        -3    | didNotJump
-         3    | didNotJump
-         0    | didJump
+        value | jumped
+        -3    | false
+         3    | false
+         0    | true
     }
-    
-    def 'jump if negative works (#value)'(value, result) {
+
+    def 'jump if negative works (#value)'(value, jumped) {
         given:
         input = """\
                 INBOX
                 JUMPN foo
-                INBOX
+                COPYTO 1
                 foo:
-                INBOX
-                OUTBOX
                 """.stripIndent()
-        
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
-        i.readLine() >>> [value, didJump, didNotJump]
-        1 * o.println(result)
-        
+        1 * context.read() >> value
+        (jumped ? 0 : 1) * context.putAt(1, value)
+
         where:
-        value | result
-        -3    | didJump
-         3    | didNotJump
-         0    | didNotJump
+        value | jumped
+        -3    | true
+         3    | false
+         0    | false
     }
-    
+
     def 'empty hands throw exception for "#name"'(name, src) {
         given:
         input = src
-        
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
         EmptyHandsException ex = thrown()
         ex.message.contains name
         name.startsWith ex.location.start.text
         ex.stackTrace.size() == 1
         ex.stackTrace[0].lineNumber == 1
-        
+
         where:
         name     | src
         'OUTBOX' | 'OUTBOX'
@@ -482,25 +464,25 @@ class InterpreterSpec extends AbstractHRMSpec
         'JUMPN'  | 'JUMPN foo'
         'JUMPN'  | 'JUMPN foo'
     }
-    
+
     def 'empty tile throws exception for "#name"'(name, src) {
         given:
-        i.readLine() >> '0'
+        context.read() >> '0'
         input = """\
                 INBOX
                 $src
                 """.stripIndent()
-        
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
         EmptyTileException ex = thrown()
         ex.message.contains name
         name.startsWith ex.location.start.text
         ex.stackTrace.size() == 1
         ex.stackTrace[0].lineNumber == 2
-        
+
         where:
         name       | src
         'COPYFROM' | 'COPYFROM 1'
@@ -509,65 +491,40 @@ class InterpreterSpec extends AbstractHRMSpec
         'BUMPUP'   | 'BUMPUP 1'
         'BUMPDN'   | 'BUMPDN 1'
     }
-    
-    def 'indirect addressing throws exception for empty #type tile'(type,addr) {
+
+    def 'indirect addressing throws exception for empty #type tile'(type, addr) {
         given:
-        i.readLine() >> '2'
+        context.read() >> '2'
         input = """\
                 INBOX
                 COPYTO 1
                 COPYFROM [$addr]
                 """.stripIndent()
-        
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
         thrown(EmptyTileException)
-        
+
         where:
         type       | addr
         'pointer'  | 2
         'resolved' | 1
     }
-    
-    def 'literal mode initializes tiles with their index'() {
-        given:
-        LITERAL_MODE = true
-        input = '''\
-                COPYFROM 42
-                SUB 23
-                OUTBOX
-                '''.stripIndent()
-        
-        when:
-        walker.interpret(parse())
-        
-        then:
-        1 * o.println('19')
-        
-        cleanup:
-        LITERAL_MODE = false
-    }
-    
+
     def 'debug info can be printed with DUMP'() {
         given:
-        input = """\
+        input = '''\
                 INBOX
-                COPYTO 1
-                COPYTO 5
-                BUMPUP 5
                 DUMP
-                """.stripIndent()
-        
+                '''.stripIndent()
+
         when:
-        walker.interpret(parse())
-        
+        walker.interpret(parse(), context)
+
         then:
-        1 * i.readLine() >> 23
-        1 * o.println('HANDS: 24')
-        1 * o.println('FLOOR TILE 1: 23')
-        1 * o.println('FLOOR TILE 5: 24')
-        0 * o.println(_) // no output for empty tiles
+        1 * context.read() >> 23
+        1 * context.dump()
     }
 }

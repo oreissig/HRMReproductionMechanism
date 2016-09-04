@@ -36,5 +36,5 @@ void interpret(String file) {
     def parser = new HRMParser(tokens)
     def tree = parser.program()
     
-    new InterpreterWalker().interpret(tree)
+    new InterpreterWalker().interpret(tree, new DirectInterpreterContext())
 }

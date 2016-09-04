@@ -12,10 +12,10 @@ class InterpreterWalker {
     
     private final ParseTreeWalker walker = ParseTreeWalker.DEFAULT
     
-    void interpret(ProgramContext program) {
+    void interpret(ProgramContext program, InterpreterContext context) {
         def labels = findLabels(program)
         
-        ParseTreeListener listener = new InterpreterListener()
+        ParseTreeListener listener = new InterpreterListener(context)
         // use custom walker to implement jumps
         def statements = program.statement()
         int pc = 0

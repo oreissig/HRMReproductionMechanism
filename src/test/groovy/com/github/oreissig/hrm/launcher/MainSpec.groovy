@@ -15,8 +15,8 @@ class MainSpec extends Specification {
     TemporaryFolder dir = new TemporaryFolder()
     
     def setup() {
-        InterpreterListener.input = i
-        InterpreterListener.output = o
+        DirectInterpreterContext.input = i
+        DirectInterpreterContext.output = o
     }
     
     def 'empty args print usage'() {
