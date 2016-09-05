@@ -1,17 +1,16 @@
 package com.github.oreissig.hrm
 
-import groovy.transform.CompileStatic
-
-import org.antlr.v4.runtime.tree.ErrorNode
-import org.antlr.v4.runtime.tree.ParseTree
-import org.antlr.v4.runtime.tree.ParseTreeWalker
-
 import com.github.oreissig.hrm.frontend.parser.HRMBaseListener
 import com.github.oreissig.hrm.frontend.parser.HRMLexer
 import com.github.oreissig.hrm.frontend.parser.HRMParser
 import com.github.oreissig.hrm.frontend.parser.HRMParser.ProgramContext
+import groovy.transform.CompileStatic
+import groovy.transform.TypeChecked
+import org.antlr.v4.runtime.tree.ErrorNode
+import org.antlr.v4.runtime.tree.ParseTree
+import org.antlr.v4.runtime.tree.ParseTreeWalker
 
-@CompileStatic
+@TypeChecked
 abstract class AbstractHRMSpec extends AntlrSpec<HRMParser>
 {
 	final Class<HRMParser> parserClass = HRMParser

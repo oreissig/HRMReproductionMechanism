@@ -1,18 +1,17 @@
 package com.github.oreissig.hrm
 
 import groovy.transform.CompileDynamic
-import groovy.transform.CompileStatic
-
+import groovy.transform.TypeChecked
+import groovy.transform.TypeCheckingMode
 import org.antlr.v4.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CharStream
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.Lexer
 import org.antlr.v4.runtime.Parser
 import org.antlr.v4.runtime.TokenStream
-
 import spock.lang.Specification
 
-@CompileStatic
+@TypeChecked
 abstract class AntlrSpec<P extends Parser> extends Specification {
 	/**
 	 * @return Lexer class to instantiate
@@ -30,7 +29,7 @@ abstract class AntlrSpec<P extends Parser> extends Specification {
 	 */
 	def input
 
-	@CompileDynamic
+	@TypeChecked(TypeCheckingMode.SKIP)
 	CharStream getCharStream() {
 		new ANTLRInputStream(input)
 	}
