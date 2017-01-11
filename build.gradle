@@ -29,8 +29,8 @@ repositories {
 }
 
 dependencies {
-    antlr   'org.antlr:antlr4:4.5.3'
-    compile 'org.antlr:antlr4-runtime:4.5.3'
+    antlr   'org.antlr:antlr4:4.6'
+    compile 'org.antlr:antlr4-runtime:4.6'
     compile 'org.codehaus.groovy:groovy-all:2.4.7:indy'
     runtime 'commons-cli:commons-cli:1.3.1'
     
